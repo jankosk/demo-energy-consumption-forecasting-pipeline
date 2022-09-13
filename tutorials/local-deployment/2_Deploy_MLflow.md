@@ -141,11 +141,13 @@ First, make sure mlflow and minio server are both, MLflow ([http://localhost:500
 and Minio ([http://localhost:9000](http://localhost:9000)), are accessible:
 
 MLflow:
+
 ```bash
 kubectl -n mlflow port-forward svc/mlflow 5000:5000
 ```
 
 MinIO:
+
 ```bash
 kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
 ```

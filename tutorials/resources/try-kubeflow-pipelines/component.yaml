@@ -1,0 +1,9 @@
+name: KFP example
+description: Example component using MLflow
+inputs: []
+outputs: []
+implementation:
+  container:
+    image: kfp-test-image:test-kfp
+    command: [python, train.py]
+    args: []

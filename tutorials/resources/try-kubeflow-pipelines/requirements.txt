@@ -1,0 +1,3 @@
+google-cloud-storage
+kfp~=1.8.12
+mlflow

@@ -58,3 +58,7 @@ In the UI, navigate to `pipelines` from the sidebar. Click any of the example pi
 If the pipelines succeed, the pipeline installation had succeeded.
 
 > Skip the **TFX - Taxi tip prediction model trainer** pipeline, as it needs access to a storage bucket. We will set up access the Google Cloud resources in the next sections.
+
+## 4. Build your first pipeline
+
+Follow the [KFP sample tutorial](../resources/try-kubeflow-pipelines/README.md) to learn how to build a simple KFP pipeline and/or test the kind+KFP+MLflow setup from end-to-end. 
