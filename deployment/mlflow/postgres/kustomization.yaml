@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Override the secret in your overlays
+secretGenerator:
+- name: postgres
+  literals:
+  - password.txt=KFSg-AYoiPdfRun64z2-w89Kk7z5cJL2IbVvSd3l8Og
+
+resources:
+- postgres-deployment.yaml
+- postgres-service.yaml
+- postgres-config.yaml
+- postgres-pvc.yaml
