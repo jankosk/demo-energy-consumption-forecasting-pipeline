@@ -1,6 +1,7 @@
 # Local deployment guide
 
-Guide with step-by-step instructions for local deployment.
+Guide with step-by-step instructions for local deployment, configuration and testing of
+the different components of the platform.
 
 ## Steps
 

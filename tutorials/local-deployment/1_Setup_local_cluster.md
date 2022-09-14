@@ -26,6 +26,9 @@ sudo mv ./kind /usr/local/bin/kind
 kind create cluster --name kind-ml --config=deployment/cluster/kind-cluster.yaml
 ```
 
+The config [`kind-cluster.yaml`](/deployment/cluster/kind-cluster.yaml) contains the
+configuration needed for setting up the ports and enable the ingress later on.
+
 ### 4. (Optional) Setup Kubernetes dashboard UI
 
 [Setup Kubernetes dashboard UI](https://istio.io/latest/docs/setup/platform-setup/kind/#setup-dashboard-ui-for-kind) for browsing Kubernetes resources. See also the [official documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/.)

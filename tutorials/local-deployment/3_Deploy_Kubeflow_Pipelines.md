@@ -2,6 +2,9 @@
 
 [TOC]
 
+## Pre-requisites
+
+- [1_Setup_local_cluster.md](1_Setup_local_cluster.md)
 
 ## 1. Prepare `kubectl` context
 
