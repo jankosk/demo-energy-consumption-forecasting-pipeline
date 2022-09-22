@@ -22,7 +22,7 @@ Create a new working directory and a virtual environment with your method of cho
 Install dependencies:
 
 ```bash
-pip install mlflow google-cloud-storage scikit-learn
+pip install mlflow google-cloud-storage scikit-learn boto3
 ```
 
 Create a sample Python file named `train.py` adapted from [train.py](https://github.com/mlflow/mlflow/blob/master/examples/sklearn_elasticnet_wine/train.py) used in the [MLflow tutorial](https://www.mlflow.org/docs/latest/tutorials-and-examples/tutorial.html):
