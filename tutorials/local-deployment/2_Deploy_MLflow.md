@@ -99,7 +99,7 @@ The default user and password are both `minioadmin`.
 
 We deployed [MinIO](https://min.io/) alongside MLflow, however, we still need to create
 the bucket that we are going to use as artifact store. It must have the same name as indicated in the
-`DEFAULT_ARTIFACT_ROOT` variable in [config.env](mlflow/dev/config.env).
+`DEFAULT_ARTIFACT_ROOT` variable in [config.env](/deployment/mlflow/dev/config.env) (e.g. `mlflow`).
 
 ### Option 1: Manually
 
