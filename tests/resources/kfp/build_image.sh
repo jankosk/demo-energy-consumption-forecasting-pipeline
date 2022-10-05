@@ -2,7 +2,7 @@
 
 set -eux
 
-IMAGE_NAME=kfp-test-image
+IMAGE_NAME=kfp-test-img
 
 IMAGE_TAG=test-kfp
 

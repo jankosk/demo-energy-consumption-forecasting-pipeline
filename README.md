@@ -1,29 +1,44 @@
-# README #
+# Experimentation Platform (IML4E)
 
-This README would normally document whatever steps are necessary to get your application up and running.
+MLOps tool stack for the experimentation and training platform.
 
-### What is this repository for? ###
+## Project structure
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+- [`install.sh`](install.sh): Main installation script.
+- [`setup.md`](installation.md): Instructions for setting up and testing the platform.
+- [`deployment/`](deployment): Kubernetes deployment manifests and configuration (IaC).
+- `tutorials/`
+  - [`local_deployment/`](tutorials/local_deployment): Developer's guide with step-by-step instructions for local deployment, configuration and testing of
+  the different components of the platform.
+- [`tests/`](): Test code to verify the deployment.
 
-### How do I get set up? ###
+## Setup
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+See set up [instructions](setup.md).
 
-### Contribution guidelines ###
+### Usage examples
 
-* Writing tests
-* Code review
-* Other guidelines
+- [Try out MLflow](tutorials/resources/try-mlflow)
+- [Try out Kubeflow Pipelines](tutorials/resources/try-kubeflow-pipelines)
+- [Try out Kserve](tutorials/resources/try-kserve)
 
-### Who do I talk to? ###
+## High-level architecture
 
-* Repo owner or admin
-* Other community or team contact
+![MVP Architecture Diagram](tutorials/resources/img/iml4e-exp-platform-diagram.png)
+
+### Components
+
+- [Kind](https://kind.sigs.k8s.io/) (cluster setup)
+- [Kubernetes](https://kubernetes.io/) (container orchestrator)
+- [MLFlow](https://mlflow.org/) (experiment tracking, model registry)
+  - [PostgreSQL DB](https://www.postgresql.org/) (metadata store for parameters and metrics)
+  - [MinIO](https://min.io/) (artifact store)
+- [Kubeflow Pipelines](https://v1-5-branch.kubeflow.org/docs/components/pipelines/introduction/) (ML workflow orchestrator)
+- [KServe](https://kserve.github.io/website/0.9/) (model deployment and serving)
+- [Prometheus](https://prometheus.io/) (monitoring)
+- [Grafana](https://grafana.com/) (monitoring and visualization)
+
+
+## Contribution guidelines
+
+**TODO...**

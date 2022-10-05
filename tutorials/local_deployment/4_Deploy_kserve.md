@@ -56,7 +56,7 @@ echo $CERTMANAGER_VERSION
 Fetch the manifest and apply:
 
 ```bash
-# deployment/
+# deployment/kserve/
 mkdir cert-manager
 wget https://github.com/cert-manager/cert-manager/releases/download/v$CERTMANAGER_VERSION/cert-manager.yaml -O cert-manager/cert-manager.yaml
 ```
@@ -80,7 +80,7 @@ echo $ISTIO_VERSION
 Download `istioctl` and install Istio with default profile:
 
 ```bash
-# deployment/
+# deployment/kserve/
 curl -L https://istio.io/downloadIstio | sh -
 cd istio-$ISTIO_VERSION
 bin/istioctl x precheck
@@ -102,7 +102,7 @@ echo $KNATIVE_VERSION
 Fetch manifests:
 
 ```bash
-# deployment/
+# deployment/kserve/
 mkdir knative
 wget https://github.com/knative/serving/releases/download/knative-v$KNATIVE_VERSION/serving-crds.yaml -O knative/serving-crds.yaml
 wget https://github.com/knative/serving/releases/download/knative-v$KNATIVE_VERSION/serving-core.yaml -O knative/serving-core.yaml
@@ -111,7 +111,7 @@ wget https://github.com/knative/serving/releases/download/knative-v$KNATIVE_VERS
 Apply the resources:
 
 ```bash
-# deployment/
+# deployment/kserve/
 kubectl apply -f knative/serving-crds.yaml
 kubectl apply -f knative/serving-core.yaml
 kubectl wait --for=condition=ready --timeout=600s pods --all -n knative-serving
@@ -120,7 +120,7 @@ kubectl wait --for=condition=ready --timeout=600s pods --all -n knative-serving
 Fetch and install KNative Istio controller:
 
 ```bash
-# deployment/
+# deployment/kserve/
 wget https://github.com/knative-sandbox/net-istio/releases/download/knative-v$KNATIVE_VERSION/net-istio.yaml -O knative/net-istio.yaml
 kubectl apply -f knative/net-istio.yaml
 ```
@@ -138,7 +138,7 @@ The latest documentation can be found in [serverless installation guide](https:/
 Install KServe:
 
 ```bash
-# deployment/
+# deployment/kserve/
 mkdir kserve
 wget https://github.com/kserve/kserve/releases/download/v${KSERVE_VERSION}/kserve.yaml -O kserve/kserve.yaml
 kubectl apply -f kserve/kserve.yaml
@@ -147,7 +147,7 @@ kubectl apply -f kserve/kserve.yaml
 Install KServe runtimes:
 
 ```bash
-# deployment/
+# deployment/kserve/
 wget https://github.com/kserve/kserve/releases/download/v${KSERVE_VERSION}/kserve-runtimes.yaml -O kserve/kserve-runtimes.yaml
 kubectl apply -f kserve/kserve-runtimes.yaml
 ```

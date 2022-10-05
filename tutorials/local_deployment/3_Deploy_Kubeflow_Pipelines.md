@@ -8,7 +8,7 @@
 
 ## 1. Prepare `kubectl` context
 
-Check your current context in `kubectl` and make sure it is pointing to the target cluster we created in the previous tutorial (`kind-kind-ml`). 
+Check your current context in `kubectl` and make sure it is pointing to the target cluster we created in the previous tutorial (`kind-kind-ep`). 
 
 ```bash
 # check current context
@@ -18,7 +18,7 @@ kubectl config current-context
 Switch `kubectl` to the right context by modifying the variables if necessary:
 
 ```bash
-kubectl config use-context kind-kind-ml
+kubectl config use-context kind-kind-ep
 ```
 
 You can also list all the available contexts with:

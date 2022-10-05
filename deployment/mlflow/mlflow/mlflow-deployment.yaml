@@ -36,11 +36,11 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: mlflow-configmap
-                  key: AWS_ACCESS_KEY_ID
+                  key: MINIO_ACCESS_KEY
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
-                configMapKeyRef:
-                  name: mlflow-configmap
+                secretKeyRef:
+                  name: mlflow-minio-secret
                   key: AWS_SECRET_ACCESS_KEY
             - name: DB_USER
               valueFrom:
@@ -70,7 +70,7 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mlflow-secret
+                  name: mlflow-postgres-secret
                   key: DB_PASSWORD
             - name: BACKEND_STORE_URI
               value: $(DB_DIALECT)://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)

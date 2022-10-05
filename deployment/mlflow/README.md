@@ -2,7 +2,8 @@
 
 Customizable [Kustomize](https://kustomize.io/) bases for deploying MLflow on Kubernetes. 
 
-The folder [`base/`](./base) contains an MLflow deployment [base](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays) that can be used in overlays.
+This is a stand-alone MLflow deployment, including in-cluster Postgres database and MinIO as artifact storage.
 
-Overlays available:
-- `dev` for deploying MLflow as stand-alone, including in-cluster Postgres database
+## Setup configuration
+
+Update `DEFAULT_ARTIFACT_ROOT` in `default.env` to your bucket location.

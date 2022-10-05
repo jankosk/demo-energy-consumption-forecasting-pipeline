@@ -83,58 +83,17 @@ Now MLFlow's UI should be reachable at [`http://localhost:5000`](http://localhos
 
 ## Access Minio UI
 
-To access MLFlow UI locally, forward a local port to MinIO server:
+To access MinIO UI locally, forward a local port to MinIO server:
 
 ```bash
 kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
 ```
 
-Now MLFlow's UI should be reachable at [`http://localhost:9000`](http://localhost:9000).
+Now MinIO's UI should be reachable at [`http://localhost:9000`](http://localhost:9000).
 The default user and password are both `minioadmin`.
 
 > In the [5_Setup_ingress.md](5_Setup_ingress.md) tutorial, we will see how to set up the ingress controller so that we can access
 > mlflow and minio without having to use `port-forward`.
-
-## Create MinIO bucket
-
-We deployed [MinIO](https://min.io/) alongside MLflow, however, we still need to create
-the bucket that we are going to use as artifact store. It must have the same name as indicated in the
-`DEFAULT_ARTIFACT_ROOT` variable in [config.env](/deployment/mlflow/dev/config.env) (e.g. `mlflow`).
-
-### Option 1: Manually
-
-Access the UI and create and create the bucket manually.
-
-You can do it by clicking the plus sign in the bottom right of the UI, selecting
-“Create New Bucket”, and naming your new bucket “mlflow”.
-
-### Option 2: Using MinIO client
-
-First make sure MinIO is accessible by using port-forwarding:
-
-```bash
-kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
-```
-
-Then, install [MinIO client for linux](https://docs.min.io/docs/minio-client-quickstart-guide.html)
-and use it to create the bucket.
-
-```bash
-# install minio client
-wget https://dl.min.io/client/mc/release/linux-amd64/mc
-chmod +x mc
-sudo mv ./mc /usr/local/bin/mc
-mc --help
-
-# configure access to the server
-mc alias set minio-kind 'http://localhost:9000/' minioadmin minioadmin
-
-# create bucket
-mc mb minio-kind/mlflow
-
-# check that the bucket was created succesfully
-mc ls minio-kind
-```
 
 ## Try out MLflow
 

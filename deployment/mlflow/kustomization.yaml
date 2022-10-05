@@ -1,2 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mlflow
+
+configMapGenerator:
+- name: mlflow-configmap
+  env: default.env
+
+secretGenerator:
+- name: mlflow-postgres-secret
+  literals:
+    # Default password in in-cluster database
+    - DB_PASSWORD=KFSg-AYoiPdfRun64z2-w89Kk7z5cJL2IbVvSd3l8Og
+- name: mlflow-minio-secret
+  literals:
+    # Default password in in-cluster minio bucket
+    - AWS_SECRET_ACCESS_KEY=minioadmin
+
+resources:
+  - ./mlflow-namespace.yaml
+
 bases:
-- ./dev
+  - ./postgres
+  - ./minio
+  - ./mlflow

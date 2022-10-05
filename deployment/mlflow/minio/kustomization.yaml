@@ -2,13 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 
 kind: Kustomization
 
-configMapGenerator:
-- name: minio-configmap
-  env: default.env
-
 resources:
 - minio-deployment.yaml
 - minio-service.yaml
 - minio-pvc.yaml
-#- minio-config.yaml
 - minio-ingress.yaml

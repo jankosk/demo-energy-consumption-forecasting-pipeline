@@ -1,0 +1,6 @@
+resources:
+- mlflow-deployment.yaml
+- mlflow-service.yaml
+- mlflow-sa.yaml
+- mlflow-ingress.yaml
+

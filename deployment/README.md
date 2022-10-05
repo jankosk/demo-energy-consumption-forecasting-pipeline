@@ -14,9 +14,9 @@ kind create cluster --name kind-ml --config=cluster/kind-cluster.yaml
 kubectl apply -k .
 ```
 
-## 3. Download `istioctl` and install Istio
+## 3. Deploy kserve
 
-Some of kserve components won't be deployed correctly in the previous step (`unable to recognize ".": no matches for kind...`). To complete the kserve installation, download `istioctl` and install Istio with default profile.
+### Download `istioctl` and install Istio
 
 ```bash
 # deployment/
@@ -25,13 +25,13 @@ curl -L https://istio.io/downloadIstio | sh -
 cd istio-$ISTIO_VERSION
 bin/istioctl x precheck
 bin/istioctl install --set profile=default -y;
+# reinstall again in case of timeout error
+bin/istioctl install --set profile=default -y;
 cd ..
 rm -rf istio-$ISTIO_VERSION
 ```
 
-Once installed, re-apply the kustomization to fix the kserve installation:
-
 ```bash
 # /deployment
-kubectl apply -k .
+kubectl apply -k kserve/
 ```
