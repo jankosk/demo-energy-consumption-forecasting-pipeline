@@ -92,7 +92,7 @@ kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
 Now MinIO's UI should be reachable at [`http://localhost:9000`](http://localhost:9000).
 The default user and password are both `minioadmin`.
 
-> In the [5_Setup_ingress.md](5_Setup_ingress.md) tutorial, we will see how to set up the ingress controller so that we can access
+> In a later tutorial, we will see how to set up the ingress controller so that we can access
 > mlflow and minio without having to use `port-forward`.
 
 ## Try out MLflow
