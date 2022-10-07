@@ -16,24 +16,60 @@ fi
 # INSTALL TOOLS
 #######################################################################################
 
-# install curl?
+### Install curl (?) ###
+
 if ! [[ $(which curl) ]]; then
     echo "Curl not found"
     echo "Installing curl"
     sudo apt install curl -y
 fi
 
-# install kubectl?
+### Install kubectl (?) ###
+
+RECOMMENDED_KUBECTL_VERSION="v1.24.0"
+RECOMMENDED_MAJOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
+RECOMMENDED_MINOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'.' -f 2)
+
+function install_kubectl {
+  echo "Installing kubectl ($RECOMMENDED_KUBECTL_VERSION)"
+  curl -LO https://dl.k8s.io/release/"$RECOMMENDED_KUBECTL_VERSION"/bin/linux/amd64/kubectl
+  chmod +x kubectl
+  mkdir -p ~/.local/bin
+  mv ./kubectl ~/.local/bin/kubectl
+
+  kubectl version --client
+}
+
 if ! [[ $(which kubectl) ]]; then
-    echo "kubectl not found"
-    echo "Installing kubectl"
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    kubectl version --client
+  echo "kubectl not found"
+  install_kubectl
+
+  else
+    # check the version is the recommended
+    CURRENT_KUBECTL_VERSION=$(kubectl version --client | grep -oP '(?<=GitVersion:)[^ ]*' | cut -d'"' -f 2)
+    CURRENT_MAJOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
+    CURRENT_MINOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'.' -f 2)
+
+    echo $RECOMMENDED_MAJOR $RECOMMENDED_MINOR : $CURRENT_MAJOR $CURRENT_MINOR
+
+    if [[ $RECOMMENDED_MAJOR != $CURRENT_MAJOR ]] || [[ $RECOMMENDED_MINOR != $CURRENT_MINOR ]]; then
+
+      echo
+      echo "The recommended kubectl version is $RECOMMENDED_KUBECTL_VERSION, your is $CURRENT_KUBECTL_VERSION"
+      while true; do
+        read -p "Do you wish to install kubectl ($RECOMMENDED_KUBECTL_VERSION)? (y/n): " yn
+        case $yn in
+            [Yy]* ) install_kubectl; break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+      done
+
+    fi
 fi
 
-# install Kind?
+### Install Kind (?) ###
+
 if ! [[ $(which kind) ]]; then
     echo "kind not found"
     echo "Installing kind"
@@ -43,3 +79,5 @@ if ! [[ $(which kind) ]]; then
 fi
 
 echo Done!
+
+exit 0

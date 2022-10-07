@@ -18,3 +18,5 @@ echo
 echo All resources up!
 echo Starting unittests...
 pytest --log-cli-level="$LOG_LEVEL_TESTS"
+
+exit 0

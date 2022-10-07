@@ -30,3 +30,5 @@ kubectl apply -k deployment/kserve/kserve || true;  # allow it fail (race condit
 kubectl apply -k deployment/kserve/kserve
 
 echo Kserve installed!
+
+exit 0

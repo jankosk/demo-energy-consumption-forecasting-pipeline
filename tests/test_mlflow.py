@@ -28,7 +28,7 @@ os.environ['AWS_ACCESS_KEY_ID'] = AWS_ACCESS_KEY_ID
 os.environ['AWS_SECRET_ACCESS_KEY'] = AWS_SECRET_ACCESS_KEY
 
 
-@pytest.mark.order(2)
+@pytest.mark.order(3)
 def test_create_experiment():
     with subprocess.Popen(["kubectl", "-n", "mlflow", "port-forward", "svc/mlflow", "5000:5000"], stdout=True) as proc:
         try:
@@ -47,7 +47,7 @@ def test_create_experiment():
             proc.terminate()
 
 
-@pytest.mark.order(3)
+@pytest.mark.order(4)
 def test_minio_create_bucket():
 
     bucket_name = f"test-{str(uuid.uuid4())[:5]}"
@@ -164,7 +164,7 @@ def run_experiment():
             minioClient.remove_object(bucket_name=BUCKET_NAME, object_name=obj.object_name)
 
 
-@pytest.mark.order(4)
+@pytest.mark.order(5)
 def test_mlflow_end_to_end():
 
     with subprocess.Popen(["kubectl", "-n", "mlflow", "port-forward", "svc/mlflow", "5000:5000"], stdout=False) as proc1:

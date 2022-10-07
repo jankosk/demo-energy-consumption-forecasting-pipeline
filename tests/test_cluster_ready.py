@@ -6,6 +6,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+CHECK_NAMESPACES = ['ingress-nginx', 'kube-node-lease', 'kube-public',
+                    'kube-system', 'kubeflow', 'local-path-storage']
+
+
 def all_pods_ready(namespace: str):
     output = subprocess.check_output(["kubectl", "get", "pods", "-n", namespace])
 
@@ -31,6 +35,13 @@ def get_all_namespaces():
     out = subprocess.check_output(["kubectl", "get", "namespaces"]).decode()
     all_namespaces = [n.split()[0] for n in out.strip().split('\n')[1:]]
     return all_namespaces
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(argnames="namespace", argvalues=CHECK_NAMESPACES)
+def test_namespaces_exists(namespace):
+    all_namespaces = get_all_namespaces()
+    assert namespace in all_namespaces, f"Namespace {namespace} doesn't exists."
 
 
 @pytest.mark.order(1)

@@ -46,7 +46,7 @@ def build_load_image():
         subprocess.run([str(BUILD_FILE)], stdout=True)
 
 
-@pytest.mark.order(5)
+@pytest.mark.order(6)
 @pytest.mark.timeout(120)
 def test_run_pipeline():
 

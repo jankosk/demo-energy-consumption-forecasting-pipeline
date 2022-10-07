@@ -55,3 +55,5 @@ echo
 if [ "$RUN_TESTS" = "true" ]; then
   /bin/bash scripts/run_tests.sh
 fi
+
+exit 0
