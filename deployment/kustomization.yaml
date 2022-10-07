@@ -5,3 +5,4 @@ bases:
 - ./mlflow/
 - ./kfp/
 - ./nginx/
+- ./monitoring/
