@@ -26,7 +26,7 @@ sudo mv ./kind /usr/local/bin/kind
 kind create cluster --name kind-ep --config=deployment/cluster/kind-config.yaml --image=kindest/node:v1.24.0
 ```
 
-The config [`kind-cluster.yaml`](/deployment/cluster/kind-cluster.yaml) contains the
+The config [`kind-config.yaml`](../../deployment/cluster/kind-config.yaml) contains the
 configuration needed for setting up the ports and enable the ingress later on.
 
 The default IP address (`127.0.0.1`) is only accessible from the computer the cluster is running on.

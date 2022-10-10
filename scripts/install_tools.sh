@@ -8,7 +8,7 @@ set -eoa pipefail
 
 # check for docker installation
 if ! [[ $(which docker) && $(docker --version) ]]; then
-    echo "Docker not found, please install docker. E.g. $ apt install docker.io -y"
+    echo "Docker not found, please install docker."
     exit 1
 fi
 
@@ -37,6 +37,15 @@ function install_kubectl {
   mkdir -p ~/.local/bin
   mv ./kubectl ~/.local/bin/kubectl
 
+  # make sure ~/.local/bin is in $PATH
+  BASE=~
+  if [[ ":$PATH:" != *:${BASE}/.local/bin:* ]]; then
+    echo 'Adding ~/.local/bin to $PATH in ~/.profile)'
+    echo "" >> ~/.profile
+    echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+    source ~/.profile
+  fi
+
   kubectl version --client
 }
 
@@ -49,8 +58,6 @@ if ! [[ $(which kubectl) ]]; then
     CURRENT_KUBECTL_VERSION=$(kubectl version --client | grep -oP '(?<=GitVersion:)[^ ]*' | cut -d'"' -f 2)
     CURRENT_MAJOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
     CURRENT_MINOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'.' -f 2)
-
-    echo $RECOMMENDED_MAJOR $RECOMMENDED_MINOR : $CURRENT_MAJOR $CURRENT_MINOR
 
     if [[ $RECOMMENDED_MAJOR != $CURRENT_MAJOR ]] || [[ $RECOMMENDED_MINOR != $CURRENT_MINOR ]]; then
 

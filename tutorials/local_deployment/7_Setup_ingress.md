@@ -29,11 +29,14 @@ Open your `/etc/hosts` file. E.g.
 sudo nano /etc/hosts
 ```
 
-Append the following line and save the changes.
+Append the following line with the IP of the cluster and save the changes.
 
 ```
 0.0.0.0 mlflow-server.local mlflow-minio.local ml-pipeline-ui.local
 ```
+
+> To access the ingresses from another computer in the local network, replace `0.0.0.0`
+> with the real IP of the computer running the cluster. 
 
 Now the ingress is all setup. You should be able to access these services by simple
 navigating on your browser to their addresses:

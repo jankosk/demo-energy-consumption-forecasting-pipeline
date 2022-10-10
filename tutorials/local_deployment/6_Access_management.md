@@ -204,5 +204,5 @@ Server Version: version.Info{Major:"1", Minor:"24", GitVersion:"v1.24.0", GitCom
 ## Helper script
 
 To make it easier for the admins, you can use the
-[create_user.sh](tutorials/resources/access_management/create_user) script to add a new user
+[create_user.sh](../resources/access_management/create_user) script to add a new user
 and create the user's `kubeconfig` in one command.

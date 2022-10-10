@@ -38,10 +38,13 @@ def kube_config():
                 ],
             )
             logger.info("\n" + out.decode())
-
             time.sleep(5)
 
             yield str(Path(tmp_dir)/f"{USERNAME}-kubeconfig")
+
+    except Exception as e:
+        raise
+
     finally:
         print("teardown")
         out = subprocess.check_output(["kubectl", "delete", "csr", f"{USERNAME}-csr"])

@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 MLFLOW_TRACKING_URI = "http://localhost:5000"
 
 MINIO_URI = "localhost:9000"
+BUCKET_NAME = 'mlflow'
+
+MLFLOW_EXPERIMENT_NAME = f"mlflow-minio-test-{str(uuid.uuid4())[:5]}"
+MODEL_NAME = "ElasticnetWineModel"
 
 os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://localhost:9000/'
 os.environ['AWS_ACCESS_KEY_ID'] = AWS_ACCESS_KEY_ID
@@ -79,10 +83,31 @@ def eval_metrics(actual, pred):
     return rmse, mae, r2
 
 
-def run_experiment():
+def clean_up():
+    logger.info(f"Cleaning experiment and model")
+    client = MlflowClient()
+    experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT_NAME)
+    experiment_id = experiment.experiment_id
+    client.delete_registered_model(MODEL_NAME)
+    client.delete_experiment(experiment_id)
 
-    MLFLOW_EXPERIMENT_NAME = f"mlflow-minio-test-{str(uuid.uuid4())[:5]}"
-    MODEL_NAME = "ElasticnetWineModel"
+    logger.info(f"Cleaning artifacts")
+    minioClient = Minio(
+        MINIO_URI,
+        access_key="minioadmin",
+        secret_key="minioadmin",
+        secure=False,
+    )
+    objects_to_delete = minioClient.list_objects(
+        bucket_name=BUCKET_NAME, prefix=experiment_id, recursive=True
+    )
+
+    for obj in objects_to_delete:
+        logger.info(f"Deleting artifact: {obj.object_name}")
+        minioClient.remove_object(bucket_name=BUCKET_NAME, object_name=obj.object_name)
+
+
+def run_experiment():
 
     np.random.seed(40)
 
@@ -137,31 +162,8 @@ def run_experiment():
         logger.info("Logging trained model")
         mlflow.sklearn.log_model(lr, "model", registered_model_name=MODEL_NAME)
 
-        # clean up
-        logger.info(f"Cleaning experiment and model")
-        client = MlflowClient()
-        experiment = client.get_experiment_by_name(MLFLOW_EXPERIMENT_NAME)
-        experiment_id = experiment.experiment_id
-        client.delete_registered_model(MODEL_NAME)
-        client.delete_experiment(experiment_id)
-
-        # clean artifacts
-        logger.info(f"Cleaning artifacts")
-        MINIO_URI = "localhost:9000"
-        BUCKET_NAME = 'mlflow'
-        minioClient = Minio(
-            MINIO_URI,
-            access_key="minioadmin",
-            secret_key="minioadmin",
-            secure=False,
-        )
-        objects_to_delete = minioClient.list_objects(
-            bucket_name=BUCKET_NAME, prefix=experiment_id, recursive=True
-        )
-
-        for obj in objects_to_delete:
-            logger.info(f"Deleting artifact: {obj.object_name}")
-            minioClient.remove_object(bucket_name=BUCKET_NAME, object_name=obj.object_name)
+        # clean up experiment and artifacts
+        clean_up()
 
 
 @pytest.mark.order(5)

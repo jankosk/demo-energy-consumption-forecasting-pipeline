@@ -4,8 +4,6 @@ In this section, we deploy [KServe](https://kserve.github.io/website/0.8/), scal
 
 ## Pre-requisites
 
-- [Preparation](./01_Preparation.md)
-- [Create GCP resources](./02_Create_GCP_Resources.md)
 - [`curl`](https://curl.se/)
 - [`wget`](https://www.gnu.org/software/wget/)
 
@@ -193,5 +191,5 @@ istio-ingressgateway   LoadBalancer   10.96.114.195   <pending>     15021:31336/
 
 ## Try out kserve
 
-Follow the instructions of the [kserve sample](/tutorials/resources/try-kserve/README.md)
+Follow the instructions of the [kserve sample](../resources/try-kserve/README.md)
 to test the setup by deploying an example model as an inference service.

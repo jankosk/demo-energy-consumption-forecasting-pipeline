@@ -97,5 +97,5 @@ The default user and password are both `minioadmin`.
 
 ## Try out MLflow
 
-Follow the instructions of the [MLflow sample](/tutorials/resources/try-mlflow/README.md)
+Follow the instructions of the [MLflow sample](../resources/try-mlflow/README.md)
 to test the MLflow/MinIO setup.

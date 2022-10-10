@@ -31,7 +31,7 @@ Then, it should be reachable at [http://127.0.0.1:8080](http://127.0.0.1:8080).
 ### Prometheus configuration
 
 The Prometheus [configuration file](https://prometheus.io/docs/prometheus/latest/configuration/configuration/) with all the scrape configs, jobs and alerting rules is defined inside the config map
-[`prometheus-config-map.yaml`](/deployment/prometheus/prometheus-config-map.yaml)
+[`prometheus-config-map.yaml`](../../deployment/monitoring/prometheus/prometheus-config-map.yaml)
 
 > In Prometheus terms, the config for collecting metrics from a collection of endpoints is called a `job`.
 
@@ -52,7 +52,7 @@ To add additional targets for metric scraping you have two options:
   ```
 - **Option 2** - Customize the prometheus configuration
 
-  Customize the scraping [configuration file](/deployment/prometheus/prometheus-config-map.yaml) by adding new jobs and targets.
+  Customize the scraping [configuration file](../../deployment/monitoring/prometheus/prometheus-config-map.yaml) by adding new jobs and targets.
   Please, refer to the [official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/)
   for detailed instructions.
 
