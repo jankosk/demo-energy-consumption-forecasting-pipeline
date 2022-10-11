@@ -30,7 +30,7 @@ echo Run tests after installation set to: "$RUN_TESTS"
 
 # CREATE CLUSTER
 function fail {
-    printf "It can be deleted with the following command: kind delete cluster --name \n" "$1" >&2 ## Send message to stderr.
+    printf "If the previous error is caused because the cluster already exists, you can deleted it with the following command: kind delete cluster --name $CLUSTER_NAME \n" "$1" >&2
     exit "${2-1}" ## Return a code specified by $2, or 1 by default.
 }
 

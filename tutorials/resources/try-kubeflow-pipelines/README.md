@@ -3,7 +3,7 @@
 This is a sample of a Kubeflow Pipeline component and pipeline adapted from [here](https://github.com/kubeflow/pipelines/tree/sdk/release-1.8/components/sample/keras/train_classifier).
 
 The purpose is to show how to create a simple pipeline component and run a KFP pipeline.
-By default, the example uses a local Kind cluster (`kind-ml`) and the local docker repository. Modify the files appropriately for your own environment if needed.
+By default, the example uses a local Kind cluster (`kind-ep`) and the local docker repository. Modify the files appropriately for your own environment if needed.
 
 This example uses custom containers for components. You may also want to learn about [building Python function-based components](https://www.kubeflow.org/docs/components/pipelines/sdk-v2/python-function-components/) as an alternative approach.
 
@@ -11,10 +11,10 @@ This example uses [Pipelines SDK v2](https://www.kubeflow.org/docs/components/pi
 
 ## Pre-requisites
 
-Ensure your `kubectl` has correct context pointing to the desired cluster. For example, for the `kind-ml` cluster:
+Ensure your `kubectl` has correct context pointing to the desired cluster. For example, for the `kind-ep` cluster:
 
 ```bash
-kubectl config use-context kind-kind-ml
+kubectl config use-context kind-kind-ep
 ```
 
 ## Push container image
