@@ -75,7 +75,7 @@ python pipeline.py
 Submit pipeline run to Kubeflow Pipelines:
 
 ```bash
-kfp run submit -f pipeline.yaml -e "Test experiment" --watch
+kfp run submit -f pipeline.yaml -e "Test experiment"
 ```
 
 You can also submit the pipeline file manually in Kubeflow Pipelines UI.

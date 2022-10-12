@@ -5,9 +5,11 @@
 Install the experimentation platform with:
 
 ```bash
-./install.sh [--test] [--debug]
+./install.sh [--kserve] [--test] [--debug]
 ```
+
 - `--test`: Use this flag to run the tests right after installation.
+- `--kserve`: Flag to indicate whether to deploy kserve.
 - `--debug`: Print extra output information.
 
 > **WARNING:** Using the `--test` flag will install the `requirements-tests.txt` in your default python environment.

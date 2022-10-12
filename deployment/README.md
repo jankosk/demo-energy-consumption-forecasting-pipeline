@@ -1,10 +1,17 @@
 # Deployment (kustomize)
 
+## Prerequisites
+
+- [curl](https://curl.se/)
+- [docker](https://docs.docker.com/engine/install/ubuntu/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+
 ## 1. Create the cluster
 
 ```bash
 # /deployment
-kind create cluster --name kind-ml --config=cluster/kind-cluster.yaml
+kind create cluster --name kind-ep --config=cluster/kind-config.yaml
 ```
 
 ## 2. Deploy the stack
