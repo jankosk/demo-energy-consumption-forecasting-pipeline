@@ -11,7 +11,7 @@ route to these services.
 NGINX is a free, open-source, high-performance HTTP server and reverse proxy.
 
 ```bash
-/deployment
+# /deployment
 mkdir nginx
 wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml -O nginx/nginx-kind-deployment.yaml
 kubectl apply -f nginx/nginx-kind-deployment.yaml
