@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Experimentation Platform (IML4E)
 
 MLOps tool stack for the experimentation and training platform.
@@ -45,6 +44,3 @@ See set up [instructions](setup.md).
 ## Contribution guidelines
 
 **TBD**
-=======
-Init
->>>>>>> 1fb418d28dd4838bad4b1b75422b01ba69301b05
