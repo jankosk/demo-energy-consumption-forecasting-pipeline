@@ -11,4 +11,6 @@ The steps in the guide are:
 - [2_Deploy_MLflow.md](./2_Deploy_MLflow.md)
 - [3_Deploy_Kubeflow_Pipelines.md](./3_Deploy_Kubeflow_Pipelines.md)
 - [4_Deploy_kserve.md](./4_Deploy_kserve.md)
-- [5_Setup_ingress.md](./5_Setup_ingress.md)
+- [5_Deploy_prometheus_grafana.md](./5_Deploy_prometheus_grafana.md)
+- [6_Access_management.md](./6_Access_management.md)
+- [7_Setup_ingress.md](./7_Setup_ingress.md)
