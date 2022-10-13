@@ -2,6 +2,8 @@
 
 MLOps tool stack for the experimentation and training platform.
 
+![](docs/img/iml4e_full.png)
+
 ## Project structure
 
 - [`install.sh`](install.sh): Main installation script.
@@ -24,7 +26,7 @@ See set up [instructions](setup.md).
 
 ## High-level architecture
 
-![MVP Architecture Diagram](tutorials/resources/img/iml4e-exp-platform-diagram.png)
+![MVP Architecture Diagram](docs/img/iml4e-exp-platform-diagram.png)
 
 ### Components
 
@@ -41,4 +43,4 @@ See set up [instructions](setup.md).
 
 ## Contribution guidelines
 
-**TODO...**
+**TBD**
