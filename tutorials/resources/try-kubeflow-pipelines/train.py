@@ -1,7 +1,7 @@
 import mlflow
 
 MLFLOW_TRACKING_URI = "http://mlflow.mlflow.svc.cluster.local:5000"
-MLFLOW_EXPERIMENT_NAME = "Kubeflow Pipeline test run"
+MLFLOW_EXPERIMENT_NAME = "Kubeflow Pipeline try-out run"
 
 print('START')
 

@@ -2,7 +2,7 @@
 
 set -eux
 
-IMAGE_NAME=kfp-test-image
+IMAGE_NAME=try-out/kfp-test-image
 
 IMAGE_TAG=test-kfp
 
@@ -16,4 +16,4 @@ docker build -t "$FULL_IMAGE_NAME" .
 kind load docker-image "$FULL_IMAGE_NAME" --name kind-ep
 
 # to push the image to a remote repository instead
-#docker push "$FULL_IMAGE_NAME"
+# docker push "$FULL_IMAGE_NAME"
