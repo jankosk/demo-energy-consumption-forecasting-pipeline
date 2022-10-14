@@ -44,3 +44,7 @@ See set up [instructions](setup.md).
 ## Contribution guidelines
 
 **TBD**
+
+## Support & Feedback
+
+**TBD**
