@@ -40,11 +40,18 @@ See set up [instructions](setup.md).
 - [Prometheus](https://prometheus.io/) (monitoring)
 - [Grafana](https://grafana.com/) (monitoring and visualization)
 
+## Support & Feedback
+
+Slack channel [**#iml4e-oss-exp-platform-support**](https://siloai-internal.slack.com/archives/C0463VA0XLP)
+can be used for issues, support requests or just discussing feedback. *(Please, send us an email if you would like to be added to the channel)*
+
+Alternatively, feel free to use [Gitlab Issues](https://gitlab.fokus.fraunhofer.de/iml4e/iml4e_oss_exp_platform/-/issues) for bugs, tasks or ideas to be discussed.
+
+Contact people:
+
+- Alari Varmann - alari.varmann@silo.ai
+- Joaquin Rives - joaquin.rives@silo.ai
 
 ## Contribution guidelines
-
-**TBD**
-
-## Support & Feedback
 
 **TBD**
