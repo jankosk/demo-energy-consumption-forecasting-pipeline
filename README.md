@@ -42,8 +42,8 @@ See set up [instructions](setup.md).
 
 ## Support & Feedback
 
-Slack channel [**#iml4e-oss-exp-platform-support**](https://siloai-internal.slack.com/archives/C0463VA0XLP)
-can be used for issues, support requests or just discussing feedback. *(Please, send us an email if you would like to be added to the channel)*
+Microsoft Teams channel [**#iml4e-oss-exp-platform-support**](https://teams.microsoft.com/l/channel/19%3a772dce7e4c3c43878d8a4480e8472e36%40thread.tacv2/iml4e-oss-exp-platform-support?groupId=013e128c-1864-4c5a-b81c-8dcd18638ed3&tenantId=f930300c-c97d-4019-be03-add650a171c4) (Fraunhofer)
+can be used for issues, support requests or just discussing feedback.
 
 Alternatively, feel free to use [Gitlab Issues](https://gitlab.fokus.fraunhofer.de/iml4e/iml4e_oss_exp_platform/-/issues) for bugs, tasks or ideas to be discussed.
 
