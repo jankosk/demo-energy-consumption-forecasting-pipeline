@@ -40,11 +40,18 @@ See set up [instructions](setup.md).
 - [Prometheus](https://prometheus.io/) (monitoring)
 - [Grafana](https://grafana.com/) (monitoring and visualization)
 
+## Support & Feedback
+
+Microsoft Teams channel [**#iml4e-oss-exp-platform-support**](https://teams.microsoft.com/l/channel/19%3a772dce7e4c3c43878d8a4480e8472e36%40thread.tacv2/iml4e-oss-exp-platform-support?groupId=013e128c-1864-4c5a-b81c-8dcd18638ed3&tenantId=f930300c-c97d-4019-be03-add650a171c4) (Fraunhofer)
+can be used for issues, support requests or just discussing feedback.
+
+Alternatively, feel free to use [Gitlab Issues](https://gitlab.fokus.fraunhofer.de/iml4e/iml4e_oss_exp_platform/-/issues) for bugs, tasks or ideas to be discussed.
+
+Contact people:
+
+- Alari Varmann - alari.varmann@silo.ai
+- Joaquin Rives - joaquin.rives@silo.ai
 
 ## Contribution guidelines
-
-**TBD**
-
-## Support & Feedback
 
 **TBD**
