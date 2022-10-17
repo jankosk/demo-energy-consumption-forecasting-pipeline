@@ -1,8 +1,14 @@
+#!/bin/bash
+
+set -eoa pipefail
+
+# create a cluster
+cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.24.0 --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   ipFamily: dual
-  apiServerAddress: 127.0.0.1
+  apiServerAddress: ${HOST_IP}
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -18,3 +24,7 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+EOF
+
+
+exit 0

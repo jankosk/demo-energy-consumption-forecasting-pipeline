@@ -1,6 +1,9 @@
 import subprocess
 import logging
 import time
+import pathlib
+from dotenv import load_dotenv
+import os
 
 import argparse
 
@@ -12,7 +15,12 @@ parser.add_argument(
     "-t", "--timeout", help="Maximum to wait for.", required=False, type=float
 )
 
-CONTEXT_NAME = "kind-kind-ep"
+ENV_FILE = pathlib.Path(__file__).parent.parent / "config.env"
+load_dotenv(dotenv_path=ENV_FILE)
+
+CLUSTER_NAME = os.getenv("CLUSTER_NAME")
+assert CLUSTER_NAME is not None
+CONTEXT_NAME = f"kind-{CLUSTER_NAME}"
 
 subprocess.run(["kubectl", "config", "use-context", CONTEXT_NAME], stdout=True)
 
@@ -26,7 +34,7 @@ def all_pods_ready(namespace: str):
 
         name, ready, status, restarts = line.split()[:4]
 
-        # TODO: skip this pod which is always down
+        # skip this pod which is always down
         if name.startswith("proxy-agent") and namespace == "kubeflow":
             continue
 

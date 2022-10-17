@@ -2,14 +2,15 @@
 
 ## Installation
 
+Change the settings in [`config.env`](config.env) if needed.
+
 Install the experimentation platform with:
 
 ```bash
-./install.sh [--kserve] [--test] [--debug]
+./install.sh [--test] [--debug]
 ```
 
 - `--test`: Use this flag to run the tests right after installation.
-- `--kserve`: Flag to indicate whether to deploy kserve.
 - `--debug`: Print extra output information.
 
 > **WARNING:** Using the `--test` flag will install the `requirements-tests.txt` in your default python environment.
@@ -39,5 +40,6 @@ pytest [-vrP] [--log-cli-level=INFO]
 ## Deleting the deployment
 
 ```bash
-kind delete cluster --name kind-ep
+# e.g. $ kind delete cluster --name kind-ep
+kind delete cluster --name [CLUSTER_NAME]
 ```

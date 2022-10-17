@@ -58,8 +58,8 @@ def test_minio_create_bucket():
 
     client = Minio(
         MINIO_URI,
-        access_key="minioadmin",
-        secret_key="minioadmin",
+        access_key=AWS_ACCESS_KEY_ID,
+        secret_key=AWS_SECRET_ACCESS_KEY,
         secure=False,
     )
 
@@ -94,8 +94,8 @@ def clean_up():
     logger.info(f"Cleaning artifacts")
     minioClient = Minio(
         MINIO_URI,
-        access_key="minioadmin",
-        secret_key="minioadmin",
+        access_key=AWS_ACCESS_KEY_ID,
+        secret_key=AWS_SECRET_ACCESS_KEY,
         secure=False,
     )
     objects_to_delete = minioClient.list_objects(
