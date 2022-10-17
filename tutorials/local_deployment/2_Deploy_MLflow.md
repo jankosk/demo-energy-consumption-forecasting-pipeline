@@ -32,6 +32,8 @@ Dockerfile use to build the docker image for MLflow can be found [`here`](/docke
 The folder [`deployment/mlflow`](/deployment/mlflow) contains a [Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/) [overlay](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays)
 that can be used for deploying MLFlow.
 
+Feel free to replace the default secrets in [`mlflow/secret.env`](/deployment/mlflow/secret.env).
+
 Print Kubernetes resources that you would deploy:
 
 ```bash
@@ -90,7 +92,8 @@ kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
 ```
 
 Now MinIO's UI should be reachable at [`http://localhost:9000`](http://localhost:9000).
-The default user and password are both `minioadmin`.
+
+The default user and password are both `minioadmin`. They are defined in the [`mlflow/config.env`](/deployment/mlflow/config.env) and [`mlflow/secret.env`](/deployment/mlflow/secret.env) environment files.
 
 > In a later tutorial, we will see how to set up the ingress controller so that we can access
 > mlflow and minio without having to use `port-forward`.

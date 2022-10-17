@@ -1,10 +1,26 @@
 import subprocess
+import pathlib
+from dotenv import load_dotenv
+import os
 
-CLUSTER_NAME = "kind-ep"
-CONTEXT_NAME = "kind-kind-ep"
+ENV_FILE = pathlib.Path(__file__).parent.parent / "config.env"
+load_dotenv(dotenv_path=ENV_FILE)
 
-AWS_ACCESS_KEY_ID = 'minioadmin'
-AWS_SECRET_ACCESS_KEY = 'minioadmin'
+CLUSTER_NAME = os.getenv("CLUSTER_NAME")
+assert CLUSTER_NAME is not None
+CONTEXT_NAME = f"kind-{CLUSTER_NAME}"
+
+# MLFLOW
+MLFLOW_ENV_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "config.env"
+MLFLOW_SECRETS_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "secret.env"
+
+load_dotenv(dotenv_path=MLFLOW_ENV_FILE)
+AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY")
+assert AWS_ACCESS_KEY_ID is not None
+
+load_dotenv(dotenv_path=MLFLOW_SECRETS_FILE)
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+assert AWS_SECRET_ACCESS_KEY is not None
 
 
 def pytest_sessionstart(session):

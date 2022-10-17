@@ -10,8 +10,31 @@
 ## 1. Create the cluster
 
 ```bash
-# /deployment
-kind create cluster --name kind-ep --config=cluster/kind-config.yaml
+export CLUSTER_NAME="kind-ep"
+export HOST_IP="127.0.0.1"  # cluster IP address
+
+cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.24.0 --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  ipFamily: dual
+  apiServerAddress: $HOST_IP
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+EOF
 ```
 
 ## 2. Deploy the stack

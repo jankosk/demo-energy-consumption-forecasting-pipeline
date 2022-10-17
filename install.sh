@@ -2,16 +2,13 @@
 
 set -eoa pipefail
 
-CLUSTER_NAME="kind-ep"
+source config.env
 
-INSTALL_KSERVE=false
 RUN_TESTS=false
 LOG_LEVEL_TESTS="WARNING"
+
 while true; do
-if [ "$1" = "--kserve" -o "$1" = "-k" ]; then
-    INSTALL_KSERVE=true
-    shift 1
-elif [ "$1" = "--test" -o "$1" = "-t" ]; then
+if [ "$1" = "--test" -o "$1" = "-t" ]; then
     RUN_TESTS=true
     shift 1
 elif [ "$1" = "--debug" -o "$1" = "-d" ]; then
@@ -22,6 +19,8 @@ else
 fi
 done
 
+echo Cluster name set to: "$CLUSTER_NAME"
+echo Host IP set to: "$HOST_IP"
 echo Kserve installation set to: "$INSTALL_KSERVE"
 echo Run tests after installation set to: "$RUN_TESTS"
 
@@ -34,7 +33,8 @@ function fail {
     exit "${2-1}" ## Return a code specified by $2, or 1 by default.
 }
 
-kind create cluster --name $CLUSTER_NAME --config=deployment/cluster/kind-config.yaml --image=kindest/node:v1.24.0 || fail
+/bin/bash scripts/create_cluster.sh || fail
+
 kubectl cluster-info --context kind-$CLUSTER_NAME
 
 # DEPLOY STACK
