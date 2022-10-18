@@ -1,7 +1,6 @@
 import subprocess
 import logging
 import pathlib
-from dataclasses import dataclass
 import kfp
 import kfp_server_api
 import pytest
