@@ -39,7 +39,23 @@ pytest [-vrP] [--log-cli-level=INFO]
 
 ## Deleting the deployment
 
+Delete the cluster:
 ```bash
 # e.g. $ kind delete cluster --name kind-ep
 kind delete cluster --name [CLUSTER_NAME]
+```
+
+If you also installed the local docker registry (`config.env` > `INSTALL_LOCAL_REGISTRY="true"`):
+
+```bash
+# check if it is running (kind-registry)
+$ docker ps
+
+CONTAINER ID   IMAGE        COMMAND                  CREATED        STATUS        PORTS                       NAMES
+6d7e3ef4e1fe   registry:2   "/entrypoint.sh /etc…"   2 hours ago    Up 2 hours    127.0.0.1:5001->5000/tcp    kind-registry
+```
+
+```bash
+# delete it
+docker rm -f $(docker ps -aqf "name=kind-registry")
 ```
