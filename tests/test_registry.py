@@ -4,6 +4,7 @@ import pathlib
 import kfp
 import pytest
 import os
+from envsubst import envsubst
 
 from .conftest import HOST_IP
 from .test_kfp import _handle_job_end
@@ -25,14 +26,11 @@ def build_push_image():
 
 
 def render_pipeline_yaml():
-    """ Uses the pipeline.yaml.template to create the final pipeline.yaml with the
-    correct registry IP. """
-    ret = subprocess.run(
-        ["cat", str(PIPELINE_TEMPLATE)], check=True, capture_output=True
-    )
-    subprocess.run(
-        ["envsubst"], input=ret.stdout, stdout=open(str(PIPELINE_FILE), 'w')
-    )
+    """Use the pipeline.yaml.template to create the final pipeline.yaml with the
+    correct registry IP by replacing the "${HOST_IP}" placeholder."""
+    with open(PIPELINE_TEMPLATE, "r") as fr:
+        with open(PIPELINE_FILE, "w") as fw:
+            fw.write(envsubst(fr.read()))
 
 
 @pytest.mark.order(7)
