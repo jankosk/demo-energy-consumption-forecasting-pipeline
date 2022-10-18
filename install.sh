@@ -38,7 +38,7 @@ function fail {
 kubectl cluster-info --context kind-$CLUSTER_NAME
 
 # DEPLOY LOCAL DOCKER REGISTRY
-if [ $INSTALL_LOCAL_REGISTRY == true ]; then
+if [ "$INSTALL_LOCAL_REGISTRY" = true ]; then
   /bin/bash scripts/install_local_registry.sh
 fi
 
@@ -48,7 +48,7 @@ kubectl apply -k deployment/  || true # allow to fail -> race condition errors m
 kubectl apply -k deployment/  # reapply again to make sure that no errors persist
 
 # DEPLOY KSERVE
-if [ $INSTALL_KSERVE == true ]; then
+if [ "$INSTALL_KSERVE" = true ]; then
   /bin/bash scripts/install_kserve.sh
 fi
 
