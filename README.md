@@ -12,6 +12,7 @@ MLOps tool stack for the experimentation and training platform.
 - `tutorials/`
   - [`local_deployment/`](tutorials/local_deployment): Developer's guide with step-by-step instructions for local deployment, configuration and testing of
   the different components of the platform.
+  - [`demo_pipeline/`](tutorials/demo_pipeline): Jupyter notebook with a demo pipeline that uses the installed Kubeflow Pipelines and MLflow components.
 - [`tests/`](): Test code to verify the deployment.
 
 ## Setup
@@ -20,6 +21,7 @@ See set up [instructions](setup.md).
 
 ### Usage examples
 
+- [Demo notebook](tutorials/demo_pipeline)
 - [Try out MLflow](tutorials/resources/try-mlflow)
 - [Try out Kubeflow Pipelines](tutorials/resources/try-kubeflow-pipelines)
 - [Try out Kserve](tutorials/resources/try-kserve)
