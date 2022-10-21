@@ -1,7 +1,6 @@
 import subprocess
 import logging
 import pathlib
-from dataclasses import dataclass
 import kfp
 import kfp_server_api
 import pytest
@@ -16,6 +15,30 @@ PIPELINE_FILE = pathlib.Path(__file__).parent / "resources" / "kfp" / "pipeline.
 
 IMAGE_NAME = "kfp-test-img"
 EXPERIMENT_NAME = "Test Experiment"
+
+
+def run_pipeline(pipeline_file: str, experiment_name: str):
+    client = kfp.Client(host=None)
+
+    created_run = client.create_run_from_pipeline_package(
+        pipeline_file=pipeline_file,
+        enable_caching=False,
+        arguments={},
+        run_name="kfp_test_run",
+        experiment_name=experiment_name,
+    )
+
+    run_id = created_run.run_id
+
+    logger.info(f"Submitted run with ID: {run_id}")
+
+    logger.info(f"Waiting for run {run_id} to complete....")
+    run_detail = created_run.wait_for_run_completion()
+    _handle_job_end(run_detail)
+
+    # clean up
+    experiment = client.get_experiment(experiment_name=experiment_name)
+    client.delete_experiment(experiment.id)
 
 
 def _handle_job_end(run_detail: kfp_server_api.ApiRunDetail):
@@ -50,27 +73,8 @@ def build_load_image():
 @pytest.mark.timeout(120)
 def test_run_pipeline():
 
-    # Build the base docker image and load it into the cluster
+    # build the base docker image and load it into the cluster
     build_load_image()
 
-    client = kfp.Client(host=None)
-
-    created_run = client.create_run_from_pipeline_package(
-        pipeline_file=str(PIPELINE_FILE),
-        enable_caching=False,
-        arguments={},
-        run_name="kfp_test_run",
-        experiment_name=EXPERIMENT_NAME,
-    )
-
-    run_id = created_run.run_id
-
-    logger.info(f"Submitted run with ID: {run_id}")
-
-    logger.info(f"Waiting for run {run_id} to complete....")
-    run_detail = created_run.wait_for_run_completion()
-    _handle_job_end(run_detail)
-
-    experiment = client.get_experiment(experiment_name=EXPERIMENT_NAME)
-
-    client.delete_experiment(experiment.id)
+    # submit and run pipeline
+    run_pipeline(pipeline_file=str(PIPELINE_FILE), experiment_name=EXPERIMENT_NAME)

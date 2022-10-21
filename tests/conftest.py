@@ -10,6 +10,9 @@ CLUSTER_NAME = os.getenv("CLUSTER_NAME")
 assert CLUSTER_NAME is not None
 CONTEXT_NAME = f"kind-{CLUSTER_NAME}"
 
+HOST_IP = os.getenv("HOST_IP")
+assert HOST_IP is not None
+
 # MLFLOW
 MLFLOW_ENV_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "config.env"
 MLFLOW_SECRETS_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "secret.env"

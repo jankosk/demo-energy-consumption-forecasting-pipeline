@@ -1,4 +1,4 @@
-# recommended using python >= 3.9
+# recommended using python >= 3.8
 
 numpy~=1.23.3
 pandas~=1.5.0
@@ -12,3 +12,4 @@ pytest-order~=1.0.1
 pytest-timeout==2.1.0
 jq~=1.3.0
 python-dotenv~=0.21.0
+envsubst~=0.1.5
