@@ -1,4 +1,4 @@
-# recommended using python >= 3.9
+# recommended using python >= 3.8
 
 numpy~=1.23.3
 pandas~=1.5.0
