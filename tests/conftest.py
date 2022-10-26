@@ -17,11 +17,11 @@ assert HOST_IP is not None
 MLFLOW_ENV_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "config.env"
 MLFLOW_SECRETS_FILE = pathlib.Path(__file__).parent.parent / "deployment" / "mlflow" / "secret.env"
 
-load_dotenv(dotenv_path=MLFLOW_ENV_FILE)
+load_dotenv(dotenv_path=MLFLOW_ENV_FILE, override=True)
 AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY")
 assert AWS_ACCESS_KEY_ID is not None
 
-load_dotenv(dotenv_path=MLFLOW_SECRETS_FILE)
+load_dotenv(dotenv_path=MLFLOW_SECRETS_FILE, override=True)
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 assert AWS_SECRET_ACCESS_KEY is not None
 
