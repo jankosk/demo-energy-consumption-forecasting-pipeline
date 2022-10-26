@@ -4,3 +4,6 @@ kind: Kustomization
 resources:
   - ./kserve.yaml
   - ./kserve-runtimes.yaml
+  - ./kserve-deployer.yaml
+  - ./kserve-inference-namespace.yaml
+  - ./kserve-sa.yaml
