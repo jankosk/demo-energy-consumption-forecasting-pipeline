@@ -16,6 +16,14 @@ fi
 # INSTALL TOOLS
 #######################################################################################
 
+### Install jq (?) ###
+
+if ! [[ $(which jq) ]]; then
+    echo "jq not found"
+    echo "Installing jq"
+    sudo apt install jq -y
+fi
+
 ### Install curl (?) ###
 
 if ! [[ $(which curl) ]]; then
