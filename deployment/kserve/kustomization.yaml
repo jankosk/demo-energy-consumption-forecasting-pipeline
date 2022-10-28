@@ -3,3 +3,4 @@ bases:
 - ./knative
 - ./kserve
 - ./users-rbac
+- ./logger
