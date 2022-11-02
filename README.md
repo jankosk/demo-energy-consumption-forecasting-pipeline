@@ -19,9 +19,10 @@ MLOps tool stack for the experimentation and training platform.
 
 See set up [instructions](setup.md).
 
-### Usage examples
+## Demo examples
 
-- [Demo notebook](tutorials/demo_pipeline)
+- [Demo notebook](tutorials/demo_pipeline): Wine quality ML pipeline.
+- [Demo project](https://gitlab.fokus.fraunhofer.de/iml4e/demo-fmnist-mlops-pipeline): Demo fmnist MLOPs pipeline.
 - [Try out MLflow](tutorials/resources/try-mlflow)
 - [Try out Kubeflow Pipelines](tutorials/resources/try-kubeflow-pipelines)
 - [Try out Kserve](tutorials/resources/try-kserve)
