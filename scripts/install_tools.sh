@@ -75,7 +75,7 @@ if ! [[ $(which kubectl) ]]; then
         read -p "Do you wish to install kubectl ($RECOMMENDED_KUBECTL_VERSION)? (y/n): " yn
         case $yn in
             [Yy]* ) install_kubectl; break;;
-            [Nn]* ) exit;;
+            [Nn]* ) break;;
             * ) echo "Please answer yes or no.";;
         esac
       done
