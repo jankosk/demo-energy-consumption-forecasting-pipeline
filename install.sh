@@ -24,6 +24,26 @@ echo Host IP set to: "$HOST_IP"
 echo Kserve installation set to: "$INSTALL_KSERVE"
 echo Run tests after installation set to: "$RUN_TESTS"
 
+# CHECK DISK SPACE
+RECOMMENDED_DISK_SPACE=26214400
+RECOMMENDED_DISK_SPACE_GB=$(($RECOMMENDED_DISK_SPACE / 1024 / 1024))
+
+DISK_SPACE=$(df -k . | awk -F ' ' '{print $4}' | sed -n '2 p')
+DISK_SPACE_GB=$(($DISK_SPACE / 1024 / 1024))
+
+if [[ DISK_SPACE < $RECOMMENDED_DISK_SPACE ]]; then
+    echo "WARNING: Not enough disk space detected!"
+    echo "The recommended is > ${RECOMMENDED_DISK_SPACE_GB} GB of disk space. You have ${DISK_SPACE_GB} GB."
+    while true; do
+        read -p "Do you want to continue with the installation? (y/n): " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit 1;;
+            * ) echo "Please answer yes or no.";;
+        esac
+      done
+fi
+
 # INSTALL TOOLS
 /bin/bash scripts/install_tools.sh
 
