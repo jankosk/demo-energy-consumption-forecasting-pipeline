@@ -1,7 +1,6 @@
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  namespace: inference
   name: users-inference
 rules:
 - apiGroups: ["serving.kserve.io"]
@@ -18,7 +17,6 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: users-inference-binding
-  namespace: inference
 subjects:
 - kind: Group
   name: users

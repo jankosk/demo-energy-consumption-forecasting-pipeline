@@ -51,6 +51,11 @@ data:
         static_configs:
              - targets: ['localhost:9090']
     
+        #- job_name: 'prometheus-pushgateway'
+        #  scrape_interval: 10s
+        #  static_configs:
+        #    - targets: ['http://prometheus-pushgateway.monitoring.svc.cluster.local:9091']
+    
       - job_name: 'k8services'
         kubernetes_sd_configs:
         - role: endpoints
