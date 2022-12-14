@@ -45,7 +45,11 @@ if [[ DISK_SPACE < $RECOMMENDED_DISK_SPACE ]]; then
 fi
 
 # INSTALL TOOLS
-/bin/bash scripts/install_tools.sh
+if [[ $OSTYPE == 'darwin'* ]]; then
+  /bin/bash scripts/install_tools_mac.sh
+else
+  /bin/bash scripts/install_tools.sh
+fi
 
 # CREATE CLUSTER
 function fail {
