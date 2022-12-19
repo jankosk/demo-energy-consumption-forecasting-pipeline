@@ -43,6 +43,7 @@ RECOMMENDED_KUBECTL_VERSION="v1.24.0"
 RECOMMENDED_MAJOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
 RECOMMENDED_MINOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'.' -f 2)
 
+SRC_FILE="~/.bash_profile"
 
 function install_kubectl {
     echo "Installing kubectl ($RECOMMENDED_KUBECTL_VERSION)"
@@ -53,9 +54,8 @@ function install_kubectl {
     mv ./kubectl ~/.local/bin/kubectl
 
     # make sure ~/.local/bin is in $PATH
-    SRC_FILE = "~/.bash_profile"
     if [[ $SHELL = *"zsh" ]]; then
-        SRC_FILE = "~/.zshrc"
+        SRC_FILE="~/.zshrc"
     fi
 
     BASE=~

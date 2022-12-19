@@ -53,8 +53,8 @@ kubectl apply -k mlflow
 Wait until pods labeled as `mlflow` and `postgres` become ready:
 
 ```bash
-kubectl -n mlflow wait --for=condition=ready pod -l app=mlflow
 kubectl -n mlflow wait --for=condition=ready pod -l app=postgres
+kubectl -n mlflow wait --for=condition=ready pod -l app=mlflow
 kubectl -n mlflow wait --for=condition=ready pod -l app=mlflow-minio
 ```
 
