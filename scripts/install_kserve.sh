@@ -11,7 +11,6 @@ kubectl apply -k deployment/kserve/cert-manager;
 # download `istioctl` and install Istio
 echo "Installing istioctl"
 
-echo "Installing kserve"
 if [[ -n "$(docker info --format '{{.OperatingSystem}}' | grep 'Docker Desktop')" ]]; then
     echo "You seem to be running Docker Desktop's built-in Kubernetes"
     echo "Make sure to increase Docker resource limit to at least 4 CPUs and 8GB of memory "
@@ -19,7 +18,7 @@ if [[ -n "$(docker info --format '{{.OperatingSystem}}' | grep 'Docker Desktop')
     echo
 fi
 
-export ISTIO_VERSION=1.11.5
+export ISTIO_VERSION=1.16.0
 curl -L https://istio.io/downloadIstio | sh -
 cd istio-$ISTIO_VERSION
 bin/istioctl x precheck;

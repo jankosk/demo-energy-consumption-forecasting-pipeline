@@ -48,7 +48,12 @@ SRC_FILE="~/.bash_profile"
 function install_kubectl {
     echo "Installing kubectl ($RECOMMENDED_KUBECTL_VERSION)"
     # TODO: get proper URL for Intel/Apple Silicon Mac
-    curl -LO https://dl.k8s.io/release/"$RECOMMENDED_KUBECTL_VERSION"/bin/darwin/amd64/kubectl
+    ARCH="amd64"
+    if [[ $(uname -p | grep 'arm') ]]; then
+        ARCH="arm64"
+    fi
+
+    curl -LO https://dl.k8s.io/release/"$RECOMMENDED_KUBECTL_VERSION"/bin/darwin/"$ARCH"/kubectl
     chmod +x ./kubectl
     mkdir -p ~/.local/bin
     mv ./kubectl ~/.local/bin/kubectl
