@@ -12,7 +12,7 @@ kubectl apply -k deployment/kserve/cert-manager;
 echo "Installing istioctl"
 
 if [[ -n "$(docker info --format '{{.OperatingSystem}}' | grep 'Docker Desktop')" ]]; then
-    echo "You seem to be running Docker Desktop's built-in Kubernetes"
+    echo "You seem to be running Docker Desktop"
     echo "Make sure to increase Docker resource limit to at least 4 CPUs and 8GB of memory "
     echo "before installing Istio!"
     echo
