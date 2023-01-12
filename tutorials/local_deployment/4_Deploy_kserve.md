@@ -32,7 +32,7 @@ Add the version variables suitable for your environment. For example, to install
 export KSERVE_VERSION=0.8.0
 export CERTMANAGER_VERSION=1.8.0
 export KNATIVE_VERSION=1.0.0
-export ISTIO_VERSION=1.11.5
+export ISTIO_VERSION=1.16.0
 ```
 
 Ensure that your kubecontext is correct:
@@ -76,6 +76,8 @@ echo $ISTIO_VERSION
 ```
 
 Download `istioctl` and install Istio with default profile:
+
+**Note:** If you're using the Kubernetes built-in with Docker Desktop, you'll need to increase the resource limit for Docker to at least 4 CPUs, 8GB of memory. Otherwise, you'll likely encounter failure during the installation of `istioctl`
 
 ```bash
 # deployment/kserve/

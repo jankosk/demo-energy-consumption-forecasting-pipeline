@@ -30,6 +30,7 @@ Create a sample Python file named `train.py` adapted from [train.py](https://git
 ```python
 # train.py
 # Adapted from https://github.com/mlflow/mlflow/blob/master/examples/sklearn_elasticnet_wine/train.py
+import os
 import logging
 import sys
 

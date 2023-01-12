@@ -5,6 +5,6 @@ bases:
 - ./mlflow/
 - ./kfp/
 - ./nginx/
-- ./users_rbac/
+- ./users-rbac/
 - ./monitoring/
 

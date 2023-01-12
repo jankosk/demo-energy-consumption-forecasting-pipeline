@@ -8,9 +8,17 @@ set -eoa pipefail
 
 kubectl apply -k deployment/kserve/cert-manager;
 
-echo "Installing kserve"
 # download `istioctl` and install Istio
-export ISTIO_VERSION=1.11.5
+echo "Installing istioctl"
+
+if [[ -n "$(docker info --format '{{.OperatingSystem}}' | grep 'Docker Desktop')" ]]; then
+    echo "You seem to be running Docker Desktop"
+    echo "Make sure to increase Docker resource limit to at least 4 CPUs and 8GB of memory "
+    echo "before installing Istio!"
+    echo
+fi
+
+export ISTIO_VERSION=1.16.0
 curl -L https://istio.io/downloadIstio | sh -
 cd istio-$ISTIO_VERSION
 bin/istioctl x precheck;
@@ -24,6 +32,7 @@ cd ..
 rm -rf istio-$ISTIO_VERSION
 
 # deploy kserve
+echo "Installing kserve"
 kubectl apply -k deployment/kserve/knative || true;  # allow it fail (race condition might happens)
 kubectl apply -k deployment/kserve/knative
 kubectl apply -k deployment/kserve/kserve || true;  # allow it fail (race condition might happens)

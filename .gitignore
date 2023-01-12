@@ -49,3 +49,6 @@ Thumbs.db
 *.wmv
 
 old/
+istio*
+temp/
+.vscode/
