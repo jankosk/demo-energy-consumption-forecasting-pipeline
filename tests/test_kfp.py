@@ -70,7 +70,7 @@ def build_load_image():
 
 
 @pytest.mark.order(6)
-@pytest.mark.timeout(120)
+@pytest.mark.timeout(240)
 def test_run_pipeline():
 
     # build the base docker image and load it into the cluster

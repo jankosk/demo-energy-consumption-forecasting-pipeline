@@ -1,0 +1,99 @@
+name: Read csv file minio
+inputs:
+- {name: s3_endpoint_url, type: String}
+- {name: s3_file_path, type: String}
+implementation:
+  container:
+    image: 127.0.0.1:5001/spark-delta:latest
+    command:
+    - sh
+    - -c
+    - |2
+
+      if ! [ -x "$(command -v pip)" ]; then
+          python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip
+      fi
+
+      PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'kfp==1.8.18' && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp -d)
+      printf "%s" "$0" > "$program_path/ephemeral_component.py"
+      python3 -m kfp.v2.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+    - |2+
+
+      import kfp
+      from kfp.v2 import dsl
+      from kfp.v2.dsl import *
+      from typing import *
+
+      def read_csv_file_minio(
+          s3_endpoint_url: str,
+          s3_file_path: str
+      ):
+          from pyspark.sql import SparkSession
+
+          SPARK_DRIVE_MEMORY = "4g"
+          SPARK_CONNECTION_TIMEOUT = "6000"
+          SPARK_MASTER = "local[*]"
+
+          def build_spark_client(
+              s3_endpoint_url: str,
+              s3_access_key: str,
+              s3_secret_key: str,
+              spark_app_name: str = "spark-delta",
+              spark_master: str = SPARK_MASTER,
+              spark_driver_memory: str = SPARK_DRIVE_MEMORY,
+              spark_connection_timeout: str = SPARK_CONNECTION_TIMEOUT,
+          ) -> SparkSession:
+              """Creates a spark client with neccessary configurations for interacting
+              with MinIO storage"""
+
+              builder = SparkSession.builder.master(spark_master) \
+                      .appName(spark_app_name) \
+                      .config("spark.driver.memory", spark_driver_memory) \
+                      .config("spark.driver.extraClassPath","/opt/spark/jars/hadoop-aws-3.3.4.jar:/opt/spark/jars/aws-java-sdk-bundle-1.12.389.jar") \
+                      .config("spark.executor.extraClassPath","/opt/spark/jars/hadoop-aws-3.3.4.jar:/opt/spark/jars/aws-java-sdk-bundle-1.12.389.jar") \
+                      .config("spark.jars.packages", "io.delta:delta-core_2.12:1.2.1") \
+                      .config("spark.jars.repositories", "https://maven-central.storage-download.googleapis.com/maven2/") \
+                      .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+                      .config(
+                          "spark.sql.catalog.spark_catalog",
+                          "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+                      ) \
+                      .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
+                      .config(
+                          "spark.hadoop.fs.s3a.aws.credentials.provider",
+                          "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+                      ) \
+                      .config("spark.hadoop.fs.s3a.endpoint", s3_endpoint_url) \
+                      .config("spark.hadoop.fs.s3a.access.key", s3_access_key) \
+                      .config("spark.hadoop.fs.s3a.secret.key", s3_secret_key) \
+                      .config("spark.hadoop.fs.s3a.connection.timeout", spark_connection_timeout) \
+                      .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false") \
+                      .config("spark.hadoop.fs.s3a.path.style.access", "true")
+
+              return builder.getOrCreate()
+
+          ACCESS_KEY = "minioadmin"
+          SECRET_KEY = "minioadmin"
+
+          spark = build_spark_client(
+              s3_endpoint_url=s3_endpoint_url,
+              s3_access_key=ACCESS_KEY,
+              s3_secret_key=SECRET_KEY
+          )
+
+          df = spark.read.format("csv") \
+              .option("header", True) \
+              .option("inferSchema", True) \
+              .load(s3_file_path)
+
+          df.show()
+
+    args:
+    - --executor_input
+    - {executorInput: null}
+    - --function_to_execute
+    - read_csv_file_minio

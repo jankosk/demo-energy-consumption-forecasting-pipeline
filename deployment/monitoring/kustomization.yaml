@@ -5,3 +5,4 @@ resources:
 bases:
   - prometheus/
   - grafana/
+  - prometheus-pushgateway/

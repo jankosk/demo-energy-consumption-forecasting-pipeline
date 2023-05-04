@@ -65,4 +65,7 @@ ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'
 
 # or alternatively
 hostname -I | cut -d' ' -f1
+
+# on macOS (given that you need th IP of the default en0 interface)
+ipconfig getifaddr en0
 ```

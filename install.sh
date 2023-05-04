@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eoa pipefail
+set -xeoa pipefail
 
 source config.env
 
@@ -45,8 +45,8 @@ if [[ DISK_SPACE < $RECOMMENDED_DISK_SPACE ]]; then
 fi
 
 # INSTALL TOOLS
-if [[ $OSTYPE == 'darwin'* ]]; then
-  /bin/bash scripts/install_tools_mac.sh
+if [[ "$(uname)" == "Darwin" ]]; then
+  bash scripts/install_tools_mac.sh  # Using default bash because /bin/bash is an old version (3)
 else
   /bin/bash scripts/install_tools.sh
 fi

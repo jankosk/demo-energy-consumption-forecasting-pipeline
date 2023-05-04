@@ -15,6 +15,6 @@ spec:
             service:
               name: mlflow-minio-service
               port:
-                number: 9000
+                number: 9001
           path: /
           pathType: Prefix

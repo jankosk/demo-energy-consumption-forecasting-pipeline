@@ -1,4 +1,4 @@
-<h1> Deploy Kubeflow Pipelines (KFP) </h1>
+<h1>Deploy Kubeflow Pipelines (KFP)</h1>
 
 [TOC]
 

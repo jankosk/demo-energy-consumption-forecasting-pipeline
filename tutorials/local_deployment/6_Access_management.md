@@ -1,4 +1,3 @@
-
 # Access Management
 
 Give access to your cluster with A client certificate and role-based access control (RBAC).
@@ -19,7 +18,7 @@ The CSR is a bit more complicated. We need to make sure that:
 
 We will use the following configuration file to generate the CSR:
 
-```
+```ini
 # /csr.cnf
 
 [ req ]
