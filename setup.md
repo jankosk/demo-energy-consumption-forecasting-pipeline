@@ -1,5 +1,3 @@
-
-
 ## Installation
 
 Change the settings in [`config.env`](config.env) if needed.
@@ -13,7 +11,7 @@ Install the experimentation platform with:
 - `--test`: Use this flag to run the tests right after installation.
 - `--debug`: Print extra output information.
 
-> **WARNING:** Using the `--test` flag will install the `requirements-tests.txt` in your default python environment.
+> **WARNING:** Using the `--test` flag will install the `requirements-tests.txt` in your current python environment.
 
 ## Test the deployment (manually)
 

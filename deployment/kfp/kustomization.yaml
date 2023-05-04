@@ -7,4 +7,4 @@ resources:
 - kfp-ingress.yaml
 - aws-secret.yaml
 - github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=1.8.4
-- github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=1.8.4
+- github.com/kubeflow/pipelines/manifests/kustomize/env/platform-agnostic?ref=1.8.4

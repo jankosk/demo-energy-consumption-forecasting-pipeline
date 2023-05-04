@@ -1,4 +1,4 @@
-<h1> Deploy MLflow </h1>
+<h1>Deploy MLflow</h1>
 
 In this guide, we deploy [MLflow](https://mlflow.org/) tracking server to Kubernetes.
 
@@ -85,15 +85,21 @@ Now MLFlow's UI should be reachable at [`http://localhost:5000`](http://localhos
 
 ## Access Minio UI
 
-To access MinIO UI locally, forward a local port to MinIO server:
+To access MinIO UI locally, forward a local port to MinIO console:
+
+```bash
+kubectl -n mlflow port-forward svc/mlflow-minio-service 9001:9001
+```
+
+Now MinIO's UI should be reachable at [`http://localhost:9001`](http://localhost:9001).
+
+The default user and password are both `minioadmin`. They are defined in the [`mlflow/config.env`](/deployment/mlflow/config.env) and [`mlflow/secret.env`](/deployment/mlflow/secret.env) environment files.
+
+To access MinIO Server locally, forward a local port to MinIO server:
 
 ```bash
 kubectl -n mlflow port-forward svc/mlflow-minio-service 9000:9000
 ```
-
-Now MinIO's UI should be reachable at [`http://localhost:9000`](http://localhost:9000).
-
-The default user and password are both `minioadmin`. They are defined in the [`mlflow/config.env`](/deployment/mlflow/config.env) and [`mlflow/secret.env`](/deployment/mlflow/secret.env) environment files.
 
 > In a later tutorial, we will see how to set up the ingress controller so that we can access
 > mlflow and minio without having to use `port-forward`.

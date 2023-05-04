@@ -1,4 +1,4 @@
-<h1> Setup ingress </h1>
+# Setup ingress
 
 When deploying KFP and MLflow in the previous tutorials, we also created ingresses for
 accessing their UIs without having to use `port-forward`.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eoa pipefail
+set -xeoa pipefail
 
 #######################################################################################
 # CHECK PRE-REQUISITES
@@ -43,28 +43,26 @@ RECOMMENDED_KUBECTL_VERSION="v1.24.0"
 RECOMMENDED_MAJOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
 RECOMMENDED_MINOR=$(echo $RECOMMENDED_KUBECTL_VERSION | cut -d'.' -f 2)
 
-SRC_FILE="~/.bash_profile"
 
 function install_kubectl {
     echo "Installing kubectl ($RECOMMENDED_KUBECTL_VERSION)"
-    # TODO: get proper URL for Intel/Apple Silicon Mac
-    ARCH="amd64"
-    if [[ $(uname -p | grep 'arm') ]]; then
-        ARCH="arm64"
-    fi
+    ARCH=$(uname -m)
 
     curl -LO https://dl.k8s.io/release/"$RECOMMENDED_KUBECTL_VERSION"/bin/darwin/"$ARCH"/kubectl
     chmod +x ./kubectl
-    mkdir -p ~/.local/bin
-    mv ./kubectl ~/.local/bin/kubectl
+    mkdir -p ${HOME}/.local/bin
+    mv ./kubectl ${HOME}/.local/bin/kubectl
 
     # make sure ~/.local/bin is in $PATH
-    if [[ $SHELL = *"zsh" ]]; then
-        SRC_FILE="~/.zshrc"
-    fi
-
-    BASE=~
-    if [[ ":$PATH:" != *:${BASE}/.local/bin:* ]]; then
+    if [[ ":$PATH:" != *:${HOME}/.local/bin:* ]]; then
+        if [ "$BASH_VERSION" ]; then
+            SRC_FILE="$HOME/.bash_profile"
+        elif [ "$ZSH_VERSION" ]; then
+            SRC_FILE="$HOME/.zshrc"
+        else
+            echo "Current shell is not Bash nor Zsh"
+            exit 1
+        fi
         echo 'Adding ~/.local/bin to $PATH'
         echo "" >> $SRC_FILE
         echo 'PATH="$HOME/.local/bin:$PATH"' >> $SRC_FILE
@@ -80,10 +78,10 @@ if ! [[ $(which kubectl) ]]; then
 else
     # Check if kubectl version is the recommended one
     CURRENT_KUBECTL_VERSION=$(kubectl version --client | grep -oE '(GitVersion:)[^ ]*' | cut -f 2 -d'"')
-    CURRENT_MAJOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'v' -f 2 | cut -d'.' -f 1)
-    CURRENT_MINOR=$(echo $CURRENT_KUBECTL_VERSION | cut -d'.' -f 2)
+    CURRENT_MAJOR=$(echo "$CURRENT_KUBECTL_VERSION" | cut -d'v' -f 2 | cut -d'.' -f 1)
+    CURRENT_MINOR=$(echo "$CURRENT_KUBECTL_VERSION" | cut -d'.' -f 2)
 
-    if [[ $RECOMMENDED_MAJOR != $CURRENT_MAJOR ]] || [[ $RECOMMENDED_MINOR != $CURRENT_MINOR ]]; then
+    if [[ $RECOMMENDED_MAJOR != "$CURRENT_MAJOR" ]] || [[ $RECOMMENDED_MINOR != "$CURRENT_MINOR" ]]; then
       echo
       echo "The recommended kubectl version is $RECOMMENDED_KUBECTL_VERSION, yours is $CURRENT_KUBECTL_VERSION"
       while true; do

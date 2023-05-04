@@ -19,10 +19,6 @@ def all_pods_ready(namespace: str):
 
         name, ready, status, restarts = line.split()[:4]
 
-        # TODO: skip this pod which is always down
-        if name.startswith('proxy-agent') and namespace == 'kubeflow':
-            continue
-
         if status != 'Completed' and (ready[0] == '0' or status != 'Running'):
             logger.error(f"ERROR: Resources not ready (namespace={namespace}).")
             return False

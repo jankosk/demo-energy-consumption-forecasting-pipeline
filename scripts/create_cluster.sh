@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eoa pipefail
+set -xeoa pipefail
 
 #######################################################################################
 # Create and configure a cluster with Kind

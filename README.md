@@ -7,17 +7,35 @@ MLOps tool stack for the experimentation and training platform.
 ## Project structure
 
 - [`install.sh`](install.sh): Main installation script.
-- [`setup.md`](installation.md): Instructions for setting up and testing the platform.
+- [`setup.md`](setup.md): Instructions for setting up and testing the platform.
 - [`deployment/`](deployment): Kubernetes deployment manifests and configuration (IaC).
-- `tutorials/`
-  - [`local_deployment/`](tutorials/local_deployment): Developer's guide with step-by-step instructions for local deployment, configuration and testing of
-  the different components of the platform.
-  - [`demo_pipeline/`](tutorials/demo_pipeline): Jupyter notebook with a demo pipeline that uses the installed Kubeflow Pipelines and MLflow components.
-- [`tests/`](): Test code to verify the deployment.
+- [`tutorials/`](tutorials)
+    - [`local_deployment/`](tutorials/local_deployment): Developer's guide with step-by-step instructions for local deployment, configuration and testing of the different components of the platform.
+    - [`demo_pipeline/`](tutorials/demo_pipeline): Jupyter notebook with a demo pipeline that uses the installed Kubeflow Pipelines and MLflow components.
+- [`tests/`](tests): Test code to verify the deployment.
+
+## Mac Users pre-setup
+> **WARNING:** If you are a Mac user, be sure to have installed the Docker Desktop app and **NOT** Rancher App, because the latter will introduce conflicts in the installation process of kubectl.
+
+If you previously installed Rancher, uninstall it, install Docker Desktop, and update your docker context as follows:
+
+```bash
+docker context default
+```
+
+You may also save yourself some time and troubleshooting by ensuring xcode is installed correctly.
+
+```bash
+xcode-select --install
+```
+
 
 ## Setup
 
-See set up [instructions](setup.md).
+
+
+
+Use the main installation script [`install.sh`](install.sh). Alternatively you can check a [simple summary guide](setup.md) or the [manual step-by-step setup](tutorials/local_deployment).
 
 ## Demo examples
 

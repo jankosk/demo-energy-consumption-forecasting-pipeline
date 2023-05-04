@@ -3,7 +3,7 @@
 This is a helper script for adding new users to the cluster and giving them access.
 
 It was created following the step indicated in the
-[6_Access_management.md](tutorials/local-deployment/6_Access_management.md) tutorial.
+[6_Access_management.md](../../../local_deployment/6_Access_management.md) tutorial.
 
 ## Usage
 
