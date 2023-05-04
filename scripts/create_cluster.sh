@@ -65,4 +65,10 @@ EOF
 
 fi
 
+# see https://github.com/kubernetes-sigs/kind/issues/2586
+CONTAINER_ID=$(docker ps -aqf "name=kind-ep-control-plane")
+docker exec -t ${CONTAINER_ID} bash -c "echo 'fs.inotify.max_user_watches=1048576' >> /etc/sysctl.conf"
+docker exec -t ${CONTAINER_ID} bash -c "echo 'fs.inotify.max_user_instances=512' >> /etc/sysctl.conf"
+docker exec -i ${CONTAINER_ID} bash -c "sysctl -p /etc/sysctl.conf"
+
 exit 0
