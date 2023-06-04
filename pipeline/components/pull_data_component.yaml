@@ -1,0 +1,22 @@
+name: Pull Data
+description: Pull data from remote
+
+inputs:
+  - {name: bucket_name, type: String}
+  - {name: file_name, type: String}
+
+outputs:
+  - {name: output_path, type: LocalPath}
+
+implementation:
+  container:
+    image: 127.0.0.1:5001/training:latest
+    command: [
+      python3,
+      -m,
+      training.pull_data,
+      --bucket_name, {inputValue: bucket_name},
+      --file_name, {inputValue: file_name},
+      --output_path, {outputPath: output_path}
+    ]
+

@@ -1,0 +1,5 @@
+env
+__pycache__
+lightning_logs
+*.egg-info
+.mypy_cache

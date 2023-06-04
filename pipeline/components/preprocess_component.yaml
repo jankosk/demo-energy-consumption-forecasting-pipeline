@@ -1,0 +1,20 @@
+name: Preprocess data
+description: Preprocess data for training
+
+inputs:
+  - {name: input_path, type: LocalPath}
+
+outputs:
+  - {name: output_dir, type: LocalPath}
+
+implementation:
+  container:
+    image: 127.0.0.1:5001/training:latest
+    command: [
+      python3,
+      -m,
+      training.preprocess,
+      --input_path, {inputPath: input_path},
+      --output_dir, {outputPath: output_dir}
+    ]
+

@@ -1,0 +1,22 @@
+name: Train Model
+description: Train model with preprocessed data
+
+inputs:
+  - {name: experiment_name, type: String}
+  - {name: train_data_dir, type: LocalPath}
+
+outputs:
+  - {name: output_dir, type: LocalPath}
+
+implementation:
+  container:
+    image: 127.0.0.1:5001/training:latest
+    command: [
+      python3,
+      -m,
+      training.train,
+      --experiment_name, {inputValue: experiment_name},
+      --train_data_dir, {inputPath: train_data_dir},
+      --output_dir, {outputPath: output_dir}
+    ]
+
