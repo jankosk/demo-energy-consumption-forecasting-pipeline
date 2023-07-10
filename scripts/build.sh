@@ -43,6 +43,3 @@ docker build -t "$IMAGE_FULL_NAME" .
 echo "Pushing image to $IMAGE_URL"
 docker tag "$IMAGE_FULL_NAME" "$IMAGE_URL"
 docker push "$IMAGE_URL"
-
-docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_FULL_NAME"
-

@@ -1,4 +1,6 @@
 import argparse
+from collections.abc import Callable
+from typing import Any
 from pathlib import Path
 from kfp.v2 import dsl
 from kfp import Client, components, aws
@@ -9,24 +11,32 @@ PROD_DATA_SET = '1_data.csv'
 COMPONENTS_PATH = Path(__file__).parent / 'components'
 IMAGE_URL = '127.0.0.1:5001/training'
 EXPERIMENT_NAME = 'default'
-MLFLOW_S3_ENDPOINT_URL = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
+MLFLOW_S3_ENDPOINT_URL = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'  # noqa: E501
 
 
-def load_component(filename: str, image_digest: str):
+def load_component(
+    filename: str,
+    image_digest: str
+) -> Callable[..., ContainerOp]:
     filepath = COMPONENTS_PATH / filename
-    component = components.load_component_from_file(str(filepath))
-    component.component_spec.implementation.container.image = f'{IMAGE_URL}@{image_digest}'
+    component: Any = components.load_component_from_file(str(filepath))
+    image = f'{IMAGE_URL}@{image_digest}'
+    component.component_spec.implementation.container.image = image
     return component
 
 
 def create_pipeline_func(image_digest: str):
     @dsl.pipeline(name='Training')
-    def training_pipeline(bucket_name: str, file_name: str, experiment_name: str):
+    def training_pipeline(
+        bucket_name: str,
+        file_name: str,
+        experiment_name: str
+    ):
         pull_data = load_component('pull_data_component.yaml', image_digest)
         pull_data_step = pull_data(bucket_name, file_name)
 
         preprocess = load_component('preprocess_component.yaml', image_digest)
-        preprocess_step: ContainerOp = preprocess(
+        preprocess_step = preprocess(
             input_path=pull_data_step.output
         )
 
@@ -36,6 +46,11 @@ def create_pipeline_func(image_digest: str):
             experiment_name=experiment_name
         )
         train_step.apply(aws.use_aws_secret(secret_name='aws-secret'))
+
+        deploy = load_component('deploy_component.yaml', image_digest)
+        image = f'{IMAGE_URL}@{image_digest}'
+        deploy(input_dir=train_step.output, image=image)
+
     return training_pipeline
 
 

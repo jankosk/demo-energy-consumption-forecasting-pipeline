@@ -1,6 +1,8 @@
 import os
+import logging
 import argparse
 import json
+from typing import Dict
 from pathlib import Path
 from neuralprophet import NeuralProphet, utils as np_utils
 import mlflow
@@ -8,8 +10,12 @@ import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
 
-MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlflow.svc.cluster.local:5000')
+MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlflow.svc.cluster.local:5000')  # noqa: E501
+N_FORECASTS = 24
 N_LAGS = 24
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
@@ -17,13 +23,16 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
     df_valid = load_data(train_data_dir / 'valid.csv')
     df_test = load_data(train_data_dir / 'test.csv')
 
-    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'  # noqa: E501
 
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment(experiment_name)
 
     with mlflow.start_run() as run:
-        model = NeuralProphet(n_lags=N_LAGS)
+        model = NeuralProphet(
+            n_forecasts=N_FORECASTS,
+            n_lags=N_LAGS
+        )
         model.add_country_holidays(country_name='Finland')
         model.add_lagged_regressor('Temp_outside')
 
@@ -31,12 +40,15 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
             df=df_train,
             validation_df=df_valid,
             progress=None,
-            early_stopping=False
+            early_stopping=False,
         )
         log_training_metrics(training_metrics)
 
         forecast = model.predict(df_test)
-        test_metrics = evaluate_forecast(actual=df_test.y[N_LAGS:], preds=forecast.yhat1[N_LAGS:])
+        test_metrics = evaluate_forecast(
+            actual=df_test.y[N_LAGS:],
+            preds=forecast.yhat1[N_LAGS:]
+        )
         mlflow.log_metrics(test_metrics)
 
         if not output_dir.exists():
@@ -47,13 +59,10 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
         ax.plot(forecast.ds, forecast.yhat1, 'b', label='Forecast')
         ax.legend()
 
-        model_path = output_dir / 'model.np2'
-        np_utils.save(model, model_path)
-
-        mlflow.log_artifact(model_path)
+        log_model(model, output_dir)
         mlflow.log_figure(fig, 'forecast.png')
 
-        save_run_id(run_id=run.info.run_id, output_dir=output_dir)
+        save_run(run_id=run.info.run_id, output_dir=output_dir)
 
 
 def load_data(csv_path: Path):
@@ -63,7 +72,7 @@ def load_data(csv_path: Path):
     return df
 
 
-def evaluate_forecast(preds: pd.Series, actual: pd.Series):
+def evaluate_forecast(preds: pd.Series, actual: pd.Series) -> Dict[str, float]:
     mae = metrics.mean_absolute_error(y_true=actual, y_pred=preds)
     mse = metrics.mean_squared_error(y_true=actual, y_pred=preds)
     return {'MAE': mae, 'MSE': mse}
@@ -75,9 +84,19 @@ def log_training_metrics(training_metrics: pd.DataFrame):
         mlflow.log_metric(f'TRAINING_{metric_name}', val)
 
 
-def save_run_id(run_id: str, output_dir: Path):
+def log_model(model: NeuralProphet, output_dir: Path):
+    model_path = output_dir / 'model.np'
+    np_utils.save(model, model_path)
+    mlflow.log_artifact(model_path, artifact_path='model')
+
+
+def save_run(run_id: str, output_dir: Path):
     output_file_path = output_dir / 'mlflow.json'
-    contents = {'run_id': run_id}
+    model_uri = f'{mlflow.get_artifact_uri()}/model'
+    contents = {
+        'run_id': run_id,
+        'model_uri': model_uri
+    }
     output_file_path.write_text(json.dumps(contents))
 
 

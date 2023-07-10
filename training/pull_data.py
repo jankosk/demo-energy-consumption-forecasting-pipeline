@@ -24,7 +24,7 @@ def pull_data(bucket_name: str, file_name: str, output_path: Path):
     minio_client.fget_object(
         bucket_name=bucket_name,
         object_name=file_name,
-        file_path=output_path
+        file_path=str(output_path)
     )
 
 
@@ -36,4 +36,5 @@ if __name__ == '__main__':
                         default='./data/training.csv')
     args = parser.parse_args()
 
-    pull_data(bucket_name=args.bucket_name, file_name=args.file_name, output_path=args.output_path)
+    pull_data(bucket_name=args.bucket_name,
+              file_name=args.file_name, output_path=args.output_path)
