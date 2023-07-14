@@ -7,8 +7,9 @@ build:
 run-pipeline: build
 	python -m pipeline.pipeline --image_digest=$(IMAGE_DIGEST)
 
+FROM_DATE = 2019-05-01T16:00:00.000
 run-inference:
-	./scripts/forecast.sh
+	./scripts/forecast.sh $(FROM_DATE)
 
 POD=$(shell kubectl -n kserve-inference get pods --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
 logs:

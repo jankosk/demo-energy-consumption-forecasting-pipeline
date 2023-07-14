@@ -4,7 +4,9 @@ from pathlib import Path
 from minio import Minio
 
 S3_MINIO_ENDPOINT = os.getenv(
-    'S3_MINIO_ENDPOINT', 'mlflow-minio-service.mlflow.svc.cluster.local:9000')
+    'S3_MINIO_ENDPOINT',
+    'mlflow-minio-service.mlflow.svc.cluster.local:9000'
+)
 ACCESS_KEY = os.getenv('ACCESS_KEY', 'minioadmin')
 SECRET_KEY = os.getenv('SECRET_KEY', 'minioadmin')
 
