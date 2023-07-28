@@ -1,0 +1,6 @@
+bases:
+- ./cert-manager
+- ./knative
+- ./kserve
+- ./users-rbac
+- ./logger
