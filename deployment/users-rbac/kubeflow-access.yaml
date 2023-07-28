@@ -16,6 +16,9 @@ rules:
 - apiGroups: [""]
   resources: ["services/proxy"]
   verbs: ["get", "watch", "list", "create"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]
 
 ---
 kind: RoleBinding
