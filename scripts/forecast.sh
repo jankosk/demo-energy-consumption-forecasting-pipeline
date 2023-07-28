@@ -7,7 +7,6 @@ if [ -z "$FROM_DATE" ]; then
     echo "Missing datetime argument"
 fi
 
-
 MODEL_NAME=custom-model
 ISVC_NAME=test-isvc
 INGRESS_GATEWAY_SERVICE=$(kubectl get svc --namespace istio-system --selector="app=istio-ingressgateway" --output jsonpath='{.items[0].metadata.name}')

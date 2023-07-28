@@ -49,7 +49,7 @@ def create_pipeline_func(image_digest: str):
 
         deploy = load_component('deploy_component.yaml', image_digest)
         image = f'{IMAGE_URL}@{image_digest}'
-        deploy(input_dir=train_step.output, image=image)
+        deploy(input_dir=pull_data_step.output, image=image)
 
     return training_pipeline
 
