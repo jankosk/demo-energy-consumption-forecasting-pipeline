@@ -2,7 +2,7 @@ import os
 import logging
 import pandas as pd
 from minio import Minio
-from training.preprocess import process_df
+from .preprocess import process_df
 
 PROD_DATA_SET = '1_data.csv'
 PROD_PREDICTIONS = 'predictions.csv'
@@ -18,12 +18,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def hello():
-    logger.info('HELLO WORLD')
-
-
 def retraining_trigger():
-    data_predictions = 'ground_truth.csv'
+    data_predictions = 'predictions.csv'
     data_prod = 'data.csv'
     minio_client = Minio(
         endpoint=S3_MINIO_ENDPOINT,
@@ -32,8 +28,7 @@ def retraining_trigger():
         secure=False
     )
     minio_client.fget_object(BUCKET_NAME, PROD_PREDICTIONS, data_predictions)
-    predictions_df = pd.read_csv(data_predictions)
-    predictions_df = process_df(predictions_df)
+    predictions_df = pd.read_csv(data_predictions, parse_dates=['ds'])
 
     minio_client.fget_object(BUCKET_NAME, PROD_DATA_SET, data_prod)
     prod_df = pd.read_csv(data_prod)
@@ -43,5 +38,6 @@ def retraining_trigger():
     logger.info(f'PREDICTIONS_DF:\n{predictions_df.to_string()}')
 
 
-if __name__ == 'main':
-    hello()
+if __name__ == '__main__':
+    logger.info('Running retraining trigger...')
+    retraining_trigger()

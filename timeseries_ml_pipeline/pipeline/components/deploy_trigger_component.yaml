@@ -1,8 +1,7 @@
-name: Deploy
-description: Deploy inference service
+name: Deploy trigger
+description: Deploy retraining trigger
 
 inputs:
-  - {name: input_dir, type: LocalPath}
   - {name: image, type: String}
 
 implementation:
@@ -11,7 +10,6 @@ implementation:
     command: [
       python3,
       -m,
-      pipeline.deploy,
-      --input_dir, {inputPath: input_dir},
+      pipeline.deploy_trigger,
       --image, {inputValue: image}
     ]

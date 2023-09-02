@@ -10,7 +10,7 @@ import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
 
-MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlflow.svc.cluster.local:5000')  # noqa: E501
+MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlflow.svc.cluster.local:5000')
 N_FORECASTS = 24
 N_LAGS = 24
 
@@ -23,7 +23,7 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
     df_valid = load_data(train_data_dir / 'valid.csv')
     df_test = load_data(train_data_dir / 'test.csv')
 
-    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'  # noqa: E501
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
 
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment(experiment_name)

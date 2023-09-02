@@ -1,0 +1,17 @@
+name: Deploy service
+description: Deploy inference service
+
+inputs:
+  - {name: input_dir, type: LocalPath}
+  - {name: image, type: String}
+
+implementation:
+  container:
+    image: 127.0.0.1:5001/training:latest
+    command: [
+      python3,
+      -m,
+      pipeline.deploy_isvc,
+      --input_dir, {inputPath: input_dir},
+      --image, {inputValue: image}
+    ]

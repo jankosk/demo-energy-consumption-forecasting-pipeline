@@ -16,7 +16,7 @@ metadata:
 secrets:
 - name: mysecret
 ---
-apiVersion: v1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: retraining-job-deployer
@@ -25,18 +25,20 @@ rules:
     resources: ["pods", "pods/log", "pods/exec"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["batch"]
-    resources: ["jobs"]
+    resources: ["jobs", "cronjobs"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: my-cluster-role-binding
+  name: pipeline-runner-binding-cluster-job-deployer
+  labels:
+    application-crd-id: kubeflow-pipelines
 subjects:
-- kind: ServiceAccount
-  name: my-service-account
-  namespace: your-namespace
+  - kind: ServiceAccount
+    name: pipeline-runner
+    namespace: kubeflow
 roleRef:
-  kind: ClusterRole
-  name: my-cluster-role
   apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: retraining-job-deployer

@@ -2,6 +2,7 @@ import os
 import logging
 import pandas as pd
 import numpy as np
+import json
 from datetime import datetime
 from pathlib import Path
 from neuralprophet import NeuralProphet, utils as np_utils
@@ -45,8 +46,9 @@ class NeuralProphetModel(Model):
         self.model = np_utils.load(MODEL_URI)
         self.ready = True
 
-    def predict(self, payload: Dict, header: Dict[str, str]) -> Dict:
-        from_date_param = payload.get('from_date')
+    def predict(self, payload: bytes, header: Dict[str, str]) -> Dict:
+        data = json.loads(payload)
+        from_date_param = data.get('from_date')
         from_date = datetime.now()
         if from_date_param is not None:
             from_date = datetime.fromisoformat(from_date_param)
