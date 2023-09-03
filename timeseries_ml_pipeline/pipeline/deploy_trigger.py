@@ -21,12 +21,22 @@ def deploy(image: str):
                 name='retraining-job',
                 command=['python3'],
                 args=['-m', 'training.retraining_trigger'],
-                image=image
+                image=image,
+                volume_mounts=[client.V1VolumeMount(
+                    mount_path='/data',
+                    name='pv'
+                )]
             )
-        ])
+        ]),
+        volumes=[client.V1Volume(
+            name='pv',
+            persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(
+                claim_name='retraining-pvc',
+            )
+        )]
     )
 
-    cron_schedule = '*/5 * * * *'
+    cron_schedule = '*/1 * * * *'
     job = client.V1CronJob(
         metadata=client.V1ObjectMeta(
             name=job_name,
@@ -41,7 +51,7 @@ def deploy(image: str):
                 )
             ),
             schedule=cron_schedule,
-            successful_jobs_history_limit=5
+            successful_jobs_history_limit=3
         )
     )
 

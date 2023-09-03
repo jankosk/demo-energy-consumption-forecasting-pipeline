@@ -10,7 +10,7 @@ BUCKET_NAME = 'mlflow'
 PROD_DATA_SET = '1_data.csv'
 COMPONENTS_PATH = Path(__file__).parent / 'components'
 IMAGE_URL = '127.0.0.1:5001/training'
-EXPERIMENT_NAME = 'default'
+EXPERIMENT_NAME = 'PRODUCTION'
 MLFLOW_S3_ENDPOINT_URL = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
 
 
@@ -75,7 +75,6 @@ if __name__ == '__main__':
 
     run = client.create_run_from_pipeline_func(
         pipeline,
-        run_name='test_run',
         arguments=arguments,
         experiment_name=EXPERIMENT_NAME,
         mode=PipelineExecutionMode.V2_COMPATIBLE,

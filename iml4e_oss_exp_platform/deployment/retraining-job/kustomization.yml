@@ -3,4 +3,5 @@ kind: Kustomization
 
 resources:
 - ./retraining-job-namespace.yaml
-- ./retraining-job-sa.yaml
+- ./retraining-job-deployer.yaml
+- ./retraining-job-volume.yaml
