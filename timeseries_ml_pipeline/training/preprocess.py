@@ -7,15 +7,12 @@ def preprocess(input_path: Path, output_dir: Path):
     df = pd.read_csv(input_path)
     df = process_df(df)
 
-    train_size = 0.1
-    test_slice = 24 * 7 * 4
-    train_valid_len = int(len(df) * train_size)
+    train_valid_len = int(len(df) * 0.9)
     train_len = int(train_valid_len * 0.9)
-    test_len = train_valid_len + test_slice
 
     df_train = df.iloc[:train_len]
     df_valid = df.iloc[train_len:train_valid_len]
-    df_test = df.iloc[train_valid_len:test_len]
+    df_test = df.iloc[train_valid_len:]
 
     if not output_dir.exists():
         output_dir.mkdir()

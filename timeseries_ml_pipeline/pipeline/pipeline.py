@@ -5,13 +5,12 @@ from pathlib import Path
 from kfp.v2 import dsl
 from kfp import Client, components, aws
 from kfp.dsl import PipelineExecutionMode, ContainerOp
+from shared import config
 
-BUCKET_NAME = 'mlflow'
-PROD_DATA_SET = '1_data.csv'
 COMPONENTS_PATH = Path(__file__).parent / 'components'
 IMAGE_URL = '127.0.0.1:5001/training'
 EXPERIMENT_NAME = 'PRODUCTION'
-MLFLOW_S3_ENDPOINT_URL = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
+MLFLOW_S3_ENDPOINT_URL = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'  # noqa: E501
 
 
 def load_component(
@@ -48,12 +47,20 @@ def create_pipeline_func(image_digest: str):
         train_step.apply(aws.use_aws_secret(secret_name='aws-secret'))
 
         image = f'{IMAGE_URL}@{image_digest}'
-        deploy_isvc = load_component('deploy_isvc_component.yaml', image_digest)
-        deploy_isvc_step = deploy_isvc(input_dir=train_step.output, image=image)
+        deploy_isvc = load_component(
+            'deploy_isvc_component.yaml',
+            image_digest
+        )
+        deploy_isvc_step = deploy_isvc(
+            input_dir=train_step.output,
+            image=image
+        )
 
-        deploy_trigger = load_component('deploy_trigger_component.yaml', image_digest)
+        deploy_trigger = load_component(
+            'deploy_trigger_component.yaml',
+            image_digest
+        )
         deploy_trigger(image=image).after(deploy_isvc_step)
-
 
     return training_pipeline
 
@@ -66,8 +73,8 @@ if __name__ == '__main__':
     client = Client(host=None)
 
     arguments = {
-        "bucket_name": BUCKET_NAME,
-        "file_name": PROD_DATA_SET,
+        "bucket_name": config.BUCKET_NAME,
+        "file_name": config.PROD_DATA,
         "experiment_name": EXPERIMENT_NAME,
     }
 

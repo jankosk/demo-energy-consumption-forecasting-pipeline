@@ -2,7 +2,7 @@ import os
 import logging
 import argparse
 import json
-from typing import Dict
+from typing import Dict, cast
 from pathlib import Path
 from neuralprophet import NeuralProphet, utils as np_utils
 import mlflow
@@ -10,7 +10,10 @@ import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
 
-MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://mlflow.mlflow.svc.cluster.local:5000')
+MLFLOW_TRACKING_URI = os.getenv(
+    'MLFLOW_TRACKING_URI',
+    'http://mlflow.mlflow.svc.cluster.local:5000'
+)
 N_FORECASTS = 24
 N_LAGS = 24
 
@@ -23,7 +26,7 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
     df_valid = load_data(train_data_dir / 'valid.csv')
     df_test = load_data(train_data_dir / 'test.csv')
 
-    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://mlflow-minio-service.mlflow.svc.cluster.local:9000'  # noqa: E501
 
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment(experiment_name)
@@ -42,6 +45,8 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
             progress=None,
             early_stopping=False,
         )
+        if training_metrics is None:
+            raise Exception('Failed to fit model')
         log_training_metrics(training_metrics)
 
         forecast = model.predict(df_test)
@@ -73,8 +78,8 @@ def load_data(csv_path: Path):
 
 
 def evaluate_forecast(preds: pd.Series, actual: pd.Series) -> Dict[str, float]:
-    mae = metrics.mean_absolute_error(y_true=actual, y_pred=preds)
-    mse = metrics.mean_squared_error(y_true=actual, y_pred=preds)
+    mae = cast(float, metrics.mean_absolute_error(y_true=actual, y_pred=preds))
+    mse = cast(float, metrics.mean_squared_error(y_true=actual, y_pred=preds))
     return {'MAE': mae, 'MSE': mse}
 
 
@@ -86,8 +91,8 @@ def log_training_metrics(training_metrics: pd.DataFrame):
 
 def log_model(model: NeuralProphet, output_dir: Path):
     model_path = output_dir / 'model.np'
-    np_utils.save(model, model_path)
-    mlflow.log_artifact(model_path, artifact_path='model')
+    np_utils.save(model, str(model_path))
+    mlflow.log_artifact(str(model_path), artifact_path='model')
 
 
 def save_run(run_id: str, output_dir: Path):

@@ -14,3 +14,4 @@ RUN --mount=type=cache,target=/root/.cache \
 COPY training training
 COPY inference inference
 COPY pipeline pipeline
+COPY shared shared
