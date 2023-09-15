@@ -3,6 +3,7 @@ description: Deploy retraining trigger
 
 inputs:
   - {name: image, type: String}
+  - {name: pipeline_version, type: String}
 
 implementation:
   container:
@@ -11,5 +12,6 @@ implementation:
       python3,
       -m,
       pipeline.deploy_trigger,
-      --image, {inputValue: image}
+      --image, {inputValue: image},
+      --pipeline_version, {inputValue: pipeline_version}
     ]

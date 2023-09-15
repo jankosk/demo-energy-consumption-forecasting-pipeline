@@ -1,7 +1,9 @@
 import logging
+import argparse
 import pandas as pd
 import numpy as np
 from minio import Minio, error
+from kfp import Client as KfpClient
 from .preprocess import process_df
 from shared.config import (
     BUCKET_NAME,
@@ -9,19 +11,24 @@ from shared.config import (
     MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY,
     PROD_DATA,
-    PREDICTIONS_DATA
+    PREDICTIONS_DATA,
+    PIPELINE_NAME,
+    EXPERIMENT_NAME,
+    PIPELINE_ROOT
 )
+from shared.utils import get_experient_id
 from pathlib import Path
 from datetime import datetime
 
 VOLUME_MOUNT_PATH = Path('/data')
 LAST_RUN_FILE_PATH = VOLUME_MOUNT_PATH / 'last_run.timestamp'
+KFP_URL = 'http://ml-pipeline-ui.kubeflow'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def retraining_trigger():
+def retraining_trigger(pipeline_version: str):
     data_predictions = 'predictions.csv'
     data_prod = 'data.csv'
     minio_client = Minio(
@@ -54,19 +61,56 @@ def retraining_trigger():
     until_date = predictions_df.iloc[-1].ds
     logger.info(f'from_date {from_date.isoformat()}')
     logger.info(f'until_date {until_date.isoformat()}')
-    if prod_df.iloc[-1].ds < until_date:
+    logger.info(f'pipeline version {pipeline_version}')
+    last_prod_entry_date = prod_df.iloc[-1].ds
+    if last_prod_entry_date < until_date:
         logger.info('Skipping... Waiting for more ground truth data.')
         return
 
     predictions_df = predictions_df[predictions_df.ds >= from_date]
     prod_df = prod_df[(prod_df.ds >= from_date) & (prod_df.ds <= until_date)]
 
-    logger.info(f'PROD_DF \n{prod_df.head().to_string()}')
-    logger.info(f'PRED_DF: \n{predictions_df.head().to_string()}')
-
     diff = np.abs(predictions_df.yhat.values - prod_df.y.values)
+    mae = np.mean(diff)
+    max_err = np.max(diff)
+    logger.info(f'MAE: {mae}')
+    logger.info(f'MAX ERROR: {max_err}')
 
-    logger.info(f'DIFF\n{diff}')
+    if mae > 0.04 and len(diff) > 24:
+        run_pipeline(pipeline_version)
+        update_timestamp(until_date)
+
+
+def run_pipeline(version_name: str):
+    client = KfpClient(host=KFP_URL)
+    pipeline_id = client.get_pipeline_id(PIPELINE_NAME)
+    experiment_id = get_experient_id(client)
+    if pipeline_id is None:
+        raise Exception(f'Pipeline {PIPELINE_NAME} not found')
+
+    res = client.list_pipeline_versions(pipeline_id)
+    versions = res.pipeline_versions if res.pipeline_versions else []
+    version = next(
+        (ver for ver in versions if ver.display_name == version_name),
+        None
+    )
+    if version is None:
+        raise Exception(f'Pipeline version {version_name} not found')
+
+    logger.info(f'Running {PIPELINE_NAME}...')
+    params = {
+        "bucket_name": BUCKET_NAME,
+        "file_name": PROD_DATA,
+        "experiment_name": EXPERIMENT_NAME,
+    }
+    client.run_pipeline(
+        experiment_id=experiment_id,
+        job_name='Retrain',
+        pipeline_id=pipeline_id,
+        version_id=version.pipeline_version_id,
+        pipeline_root=PIPELINE_ROOT,
+        params=params,
+    )
 
 
 def update_timestamp(timestamp: datetime):
@@ -83,4 +127,7 @@ def get_timestamp() -> datetime:
 
 
 if __name__ == '__main__':
-    retraining_trigger()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pipeline_version', type=str)
+    args = parser.parse_args()
+    retraining_trigger(args.pipeline_version)

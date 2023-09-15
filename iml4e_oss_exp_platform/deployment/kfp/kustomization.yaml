@@ -6,7 +6,5 @@ namespace: kubeflow
 resources:
 - kfp-ingress.yaml
 - aws-secret.yaml
-# - https://github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=1.8.12
-# - https://github.com/kubeflow/pipelines/manifests/kustomize/env/platform-agnostic?ref=1.8.12
-- github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=1.8.4
-- github.com/kubeflow/pipelines/manifests/kustomize/env/platform-agnostic?ref=1.8.4
+- https://github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=2.0.1
+- https://github.com/kubeflow/pipelines/manifests/kustomize/env/platform-agnostic?ref=2.0.1

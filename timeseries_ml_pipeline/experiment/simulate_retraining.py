@@ -1,7 +1,11 @@
 from minio import Minio
+from kfp import Client
+from kfp_server_api import V2beta1Run, V2beta1RuntimeState
 from datetime import datetime, timedelta
 from pathlib import Path
 from shared.config import BUCKET_NAME, PROD_DATA, MODEL_NAME
+from shared.utils import get_experient_id
+from typing import List
 import pandas as pd
 import json
 import requests
@@ -21,14 +25,17 @@ all_df = pd.read_csv(
     parse_dates=['Time']
 )
 
+kfp_client = Client()
+
+minio_client = Minio(
+    endpoint='localhost:9000',
+    access_key='minioadmin',
+    secret_key='minioadmin',
+    secure=False
+)
+
 
 def update_ground_truth(curr_date: datetime):
-    minio_client = Minio(
-        endpoint='localhost:9000',
-        access_key='minioadmin',
-        secret_key='minioadmin',
-        secure=False
-    )
     data_path = '/tmp/prod_data.csv'
     minio_client.fget_object(BUCKET_NAME, PROD_DATA, data_path)
     prod_df = pd.read_csv(data_path, parse_dates=['Time'])
@@ -57,14 +64,36 @@ def get_forecast(from_date: datetime) -> pd.DataFrame:
     )
     forecast = res.json()
     forecast_df = pd.DataFrame.from_dict(forecast)
-    logger.info(f'FORECAST\n{forecast_df.to_string()}')
+    logger.info(f'FORECAST\n{forecast_df.tail().to_string()}')
     return forecast_df
 
 
+def is_active_run(run: V2beta1Run):
+    return (run.state == V2beta1RuntimeState.RUNNING or
+            run.state == V2beta1RuntimeState.PENDING)
+
+
+def get_active_run(experiment_id: str) -> V2beta1Run | None:
+    res = kfp_client.list_runs(experiment_id=experiment_id)
+    runs: List[V2beta1Run] = res.runs if res.runs else []
+    return next(
+        (run for run in runs if is_active_run(run)),
+        None
+    )
+
+
 def run_experiment():
+    experiment_str = get_experient_id(kfp_client)
     curr_date = FIRST_DATE
     while curr_date < LAST_DATE:
         logger.info(f'DAY {curr_date.isoformat()}')
+        active_run = get_active_run(experiment_str)
+        if active_run is not None:
+            logger.info('Waiting for retraining to complete...')
+            kfp_client.wait_for_run_completion(
+                run_id=str(active_run.run_id),
+                timeout=60 * 5
+            )
         get_forecast(curr_date)
         update_ground_truth(curr_date)
         curr_date = curr_date + timedelta(days=1)

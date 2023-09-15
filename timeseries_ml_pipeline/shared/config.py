@@ -1,10 +1,12 @@
 import os
 
 MODEL_NAME = 'custom-model'
-
 BUCKET_NAME = 'mlflow'
 PROD_DATA = 'data.csv'
 PREDICTIONS_DATA = 'predictions.csv'
+EXPERIMENT_NAME = 'PRODUCTION'
+PIPELINE_NAME = 'Energy Demand Forecasting Pipeline'
+PIPELINE_ROOT = 'minio://mlpipeline/v2/artifacts'
 
 S3_MINIO_ENDPOINT = os.getenv(
     'S3_MINIO_ENDPOINT',

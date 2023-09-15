@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 config.load_incluster_config()
 
 
-def deploy(image: str):
+def deploy(image: str, pipeline_version: str):
     job_namespace = 'retraining-job'
     job_name = 'test-job'
 
@@ -20,7 +20,8 @@ def deploy(image: str):
             client.V1Container(
                 name='retraining-job',
                 command=['python3'],
-                args=['-m', 'training.retraining_trigger'],
+                args=['-m', 'training.retraining_trigger',
+                    '--pipeline_version', pipeline_version],
                 image=image,
                 volume_mounts=[client.V1VolumeMount(
                     mount_path='/data',
@@ -50,6 +51,7 @@ def deploy(image: str):
                     )
                 )
             ),
+            suspend=False,
             schedule=cron_schedule,
             successful_jobs_history_limit=3
         )
@@ -68,6 +70,7 @@ def deploy(image: str):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image', type=str)
+    parser.add_argument('--pipeline_version', type=str)
     args = parser.parse_args()
 
-    deploy(image=args.image)
+    deploy(args.image, args.pipeline_version)
