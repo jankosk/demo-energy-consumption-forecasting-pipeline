@@ -90,6 +90,10 @@ if __name__ == '__main__':
     client = Client()
     pipeline_compiler = compiler.Compiler()
 
+    pipeline_id = client.get_pipeline_id(name=config.PIPELINE_NAME)
+    if pipeline_id is None:
+        pipeline_version = config.PIPELINE_NAME
+
     pipeline: Any = create_pipeline_func(
         image_digest=image_digest,
         pipeline_version=pipeline_version
@@ -100,19 +104,27 @@ if __name__ == '__main__':
     )
 
     arguments = {
-        "bucket_name": config.BUCKET_NAME,
-        "file_name": config.PROD_DATA,
-        "experiment_name": config.EXPERIMENT_NAME,
+        'bucket_name': config.BUCKET_NAME,
+        'file_name': config.PROD_DATA,
+        'experiment_name': config.EXPERIMENT_NAME,
     }
     client.create_run_from_pipeline_package(
         str(PIPELINE_PATH),
         arguments=arguments,
         experiment_name=config.EXPERIMENT_NAME,
         pipeline_root=config.PIPELINE_ROOT,
-        enable_caching=True
+        enable_caching=False,
     )
-    client.upload_pipeline_version(
-        pipeline_package_path=str(PIPELINE_PATH),
-        pipeline_version_name=pipeline_version,
-        pipeline_name=config.PIPELINE_NAME
-    )
+
+    if pipeline_id is None:
+        client.upload_pipeline(
+            pipeline_package_path=str(PIPELINE_PATH),
+            pipeline_name=config.PIPELINE_NAME
+        )
+    else:
+        client.upload_pipeline_version(
+            pipeline_package_path=str(PIPELINE_PATH),
+            pipeline_version_name=pipeline_version,
+            pipeline_id=None,
+            pipeline_name=config.PIPELINE_NAME
+        )

@@ -12,7 +12,7 @@ import requests
 import logging
 import time
 
-SERVICE_NAME = 'test-isvc.kserve-inference.example.com'
+SERVICE_NAME = 'demand-forecasting-isvc.kserve-inference.example.com'
 ALL_DATA_SET = 'data.csv'
 FIRST_DATE = datetime.fromisoformat('2019-04-29T15:00:00')
 LAST_DATE = datetime.fromisoformat('2022-04-01T00:00:00')
@@ -74,7 +74,10 @@ def is_active_run(run: V2beta1Run):
 
 
 def get_active_run(experiment_id: str) -> V2beta1Run | None:
-    res = kfp_client.list_runs(experiment_id=experiment_id)
+    res = kfp_client.list_runs(
+        experiment_id=experiment_id,
+        sort_by='created_at desc'
+    )
     runs: List[V2beta1Run] = res.runs if res.runs else []
     return next(
         (run for run in runs if is_active_run(run)),
@@ -94,10 +97,11 @@ def run_experiment():
                 run_id=str(active_run.run_id),
                 timeout=60 * 5
             )
+            time.sleep(30)
         get_forecast(curr_date)
         update_ground_truth(curr_date)
         curr_date = curr_date + timedelta(days=1)
-        time.sleep(60)
+        time.sleep(15)
 
 
 if __name__ == '__main__':

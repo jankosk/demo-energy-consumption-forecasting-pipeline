@@ -1,5 +1,4 @@
 IMAGE_NAME = 127.0.0.1:5001/training
-JOB_NAME = test-job
 IMAGE_DIGEST = $(shell docker inspect --format='{{index .RepoDigests 0}}' "$(IMAGE_NAME)" | cut -d'@' -f2)
 
 build:
@@ -18,16 +17,17 @@ FROM_DATE = 2019-04-29T15:00:00
 run-inference:
 	./scripts/forecast.sh $(FROM_DATE)
 
-POD=$(shell kubectl -n kserve-inference get pods --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
-logs:
-	kubectl -n kserve-inference logs ${POD} -c kserve-container
+ISVC_POD = demand-forecasting-isvc
+isvc-logs:
+	kubectl -n kserve-inference logs -l app=${ISVC_POD} -c kserve-container -f
 
-JOB=$(shell kubectl -n retraining-job get jobs --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
-job-logs:
-	kubectl -n retraining-job logs job/${JOB}
+RETRAINER_POD = retrainer-pod
+retrainer-logs:
+	kubectl -n retraining-job logs -l app=${RETRAINER_POD} -f
 
-suspend-job:
-	kubectl -n retraining-job patch cronjob/${JOB_NAME} --type=strategic --patch '{"spec":{"suspend":true}}'
+RETRAINER_DEPLOYMENT = retrainer-deployment
+kill-retrainer:
+	kubectl -n retraining-job delete deployment ${RETRAINER_DEPLOYMENT}
 
 run-experiment:
 	python -m experiment.simulate_retraining

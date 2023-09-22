@@ -1,6 +1,6 @@
 import os
 
-MODEL_NAME = 'custom-model'
+MODEL_NAME = 'demand-forecasting-model'
 BUCKET_NAME = 'mlflow'
 PROD_DATA = 'data.csv'
 PREDICTIONS_DATA = 'predictions.csv'

@@ -9,16 +9,16 @@ config.load_incluster_config()
 
 
 def deploy(image: str, pipeline_version: str):
-    job_namespace = 'retraining-job'
-    job_name = 'test-job'
+    namespace = 'retraining-job'
+    pod_name = 'retrainer-pod'
+    deployment_name = 'retrainer-deployment'
 
-    batch_api = client.BatchV1Api()
+    apps_api = client.AppsV1Api()
 
-    job_pod = client.V1PodSpec(
-        restart_policy='Never',
+    pod = client.V1PodSpec(
         containers=([
             client.V1Container(
-                name='retraining-job',
+                name=pod_name,
                 command=['python3'],
                 args=['-m', 'training.retraining_trigger',
                     '--pipeline_version', pipeline_version],
@@ -37,34 +37,37 @@ def deploy(image: str, pipeline_version: str):
         )]
     )
 
-    cron_schedule = '*/1 * * * *'
-    job = client.V1CronJob(
+    deployment = client.V1Deployment(
         metadata=client.V1ObjectMeta(
-            name=job_name,
-            namespace=job_namespace
+            namespace=namespace,
+            name=deployment_name
         ),
-        spec=client.V1CronJobSpec(
-            job_template=client.V1JobTemplateSpec(
-                spec=client.V1JobSpec(
-                    template=client.V1PodTemplateSpec(
-                        spec=job_pod
-                    )
-                )
+        spec=client.V1DeploymentSpec(
+            selector=client.V1LabelSelector(
+                match_labels={'app': pod_name}
             ),
-            suspend=False,
-            schedule=cron_schedule,
-            successful_jobs_history_limit=3
+            template=client.V1PodTemplateSpec(
+                metadata=client.V1ObjectMeta(
+                    namespace=namespace,
+                    name=pod_name,
+                    labels={'app': pod_name}
+                ),
+                spec=pod
+            )
         )
     )
 
     try:
-        batch_api.patch_namespaced_cron_job(
-            name=job_name,
-            namespace=job_namespace,
-            body=job
+        apps_api.patch_namespaced_deployment(
+            name=deployment_name,
+            namespace=namespace,
+            body=deployment
         )
     except client.ApiException:
-        batch_api.create_namespaced_cron_job(namespace=job_namespace, body=job)
+        apps_api.create_namespaced_deployment(
+            namespace=namespace,
+            body=deployment
+        )
 
 
 if __name__ == '__main__':

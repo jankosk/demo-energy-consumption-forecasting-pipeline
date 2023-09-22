@@ -13,6 +13,7 @@ from shared import config
 from minio import Minio, error
 
 MODEL_URI = os.environ.get('MODEL_URI', '/mnt/models/model.np')
+MODEL_VERSION = os.environ.get('MODEL_VERSION')
 PERIODS = 24
 
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,7 @@ class NeuralProphetModel(Model):
         self.load()
 
     def load(self):
+        logger.info(f'Loading {config.MODEL_NAME} version {MODEL_VERSION}...')
         self.model = np_utils.load(MODEL_URI)
         self.ready = True
 
@@ -103,5 +105,5 @@ class NeuralProphetModel(Model):
 
 
 if __name__ == "__main__":
-    model = NeuralProphetModel("custom-model")
+    model = NeuralProphetModel(config.MODEL_NAME)
     ModelServer().start([model])

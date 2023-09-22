@@ -18,15 +18,17 @@ logger = logging.getLogger(__name__)
 def deploy(input_dir: Path, image: str):
     run = get_run(input_dir)
     model_uri = f'{run["model_uri"]}/model.np'
+    run_id = run['run_id']
 
     isvc_namespace = 'kserve-inference'
-    isvc_name = 'test-isvc'
+    isvc_name = 'demand-forecasting-isvc'
 
     isvc = V1beta1InferenceService(
         api_version=constants.KSERVE_V1BETA1,
         kind=constants.KSERVE_KIND,
         metadata=client.V1ObjectMeta(
             name=isvc_name,
+            labels={'app': isvc_name},
             namespace=isvc_namespace,
             annotations={'sidecar.istio.io/inject': 'false'}
         ),
@@ -38,7 +40,10 @@ def deploy(input_dir: Path, image: str):
                     command=['python3'],
                     args=['-m', 'inference.inference_service'],
                     image=image,
-                    env=[client.V1EnvVar(name='STORAGE_URI', value=model_uri)]
+                    env=[
+                        client.V1EnvVar(name='STORAGE_URI', value=model_uri),
+                        client.V1EnvVar(name='MODEL_VERSION', value=run_id)
+                    ]
                 )]
             )
         )

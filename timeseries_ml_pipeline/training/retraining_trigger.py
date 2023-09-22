@@ -2,23 +2,15 @@ import logging
 import argparse
 import pandas as pd
 import numpy as np
+import time
 from minio import Minio, error
 from kfp import Client as KfpClient
 from .preprocess import process_df
-from shared.config import (
-    BUCKET_NAME,
-    S3_MINIO_ENDPOINT,
-    MINIO_ACCESS_KEY,
-    MINIO_SECRET_KEY,
-    PROD_DATA,
-    PREDICTIONS_DATA,
-    PIPELINE_NAME,
-    EXPERIMENT_NAME,
-    PIPELINE_ROOT
-)
+from shared import config
 from shared.utils import get_experient_id
 from pathlib import Path
 from datetime import datetime
+from sklearn import metrics
 
 VOLUME_MOUNT_PATH = Path('/data')
 LAST_RUN_FILE_PATH = VOLUME_MOUNT_PATH / 'last_run.timestamp'
@@ -32,24 +24,24 @@ def retraining_trigger(pipeline_version: str):
     data_predictions = 'predictions.csv'
     data_prod = 'data.csv'
     minio_client = Minio(
-        endpoint=S3_MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
+        endpoint=config.S3_MINIO_ENDPOINT,
+        access_key=config.MINIO_ACCESS_KEY,
+        secret_key=config.MINIO_SECRET_KEY,
         secure=False
     )
+
+    minio_client.fget_object(config.BUCKET_NAME, config.PROD_DATA, data_prod)
     try:
         minio_client.fget_object(
-            BUCKET_NAME,
-            PREDICTIONS_DATA,
+            config.BUCKET_NAME,
+            config.PREDICTIONS_DATA,
             data_predictions
         )
     except error.S3Error:
-        logger.error(f'File {PREDICTIONS_DATA} does not exist')
+        logger.error(f'File {config.PREDICTIONS_DATA} does not exist')
         return
 
     predictions_df = pd.read_csv(data_predictions, parse_dates=['ds'])
-
-    minio_client.fget_object(BUCKET_NAME, PROD_DATA, data_prod)
     prod_df = pd.read_csv(data_prod)
     prod_df = process_df(prod_df)
 
@@ -59,36 +51,45 @@ def retraining_trigger(pipeline_version: str):
 
     from_date = get_timestamp()
     until_date = predictions_df.iloc[-1].ds
-    logger.info(f'from_date {from_date.isoformat()}')
-    logger.info(f'until_date {until_date.isoformat()}')
-    logger.info(f'pipeline version {pipeline_version}')
+    logger.info(f'{from_date.isoformat()} - {until_date.isoformat()}')
     last_prod_entry_date = prod_df.iloc[-1].ds
     if last_prod_entry_date < until_date:
         logger.info('Skipping... Waiting for more ground truth data.')
-        return
+        return False
 
-    predictions_df = predictions_df[predictions_df.ds >= from_date]
-    prod_df = prod_df[(prod_df.ds >= from_date) & (prod_df.ds <= until_date)]
+    predictions_df = predictions_df[predictions_df.ds > from_date]
+    prod_df = prod_df[(prod_df.ds > from_date) &
+                      (prod_df.ds <= until_date)]
+    actual = prod_df.y.values
+    preds = predictions_df.yhat.values
 
-    diff = np.abs(predictions_df.yhat.values - prod_df.y.values)
-    mae = np.mean(diff)
-    max_err = np.max(diff)
-    logger.info(f'MAE: {mae}')
-    logger.info(f'MAX ERROR: {max_err}')
-
-    if mae > 0.04 and len(diff) > 24:
+    if should_retrain(actual, preds):
         run_pipeline(pipeline_version)
-        update_timestamp(until_date)
+        next_date = until_date
+        update_timestamp(next_date)
+
+
+def should_retrain(actual, predictions):
+    diff = np.sort(np.abs(actual - predictions))
+    if len(diff) <= 24:
+        return False
+    MAE = metrics.mean_absolute_error(actual, predictions)
+    MAE_THRESHOLD = 0.05
+    MAX_N_ERROR = diff[-24:].mean()
+    MAX_N_ERROR_THRESHOLD = 0.1
+    logger.info(f'MAE: {MAE}')
+    logger.info(f'MAX AVG ERROR: {MAX_N_ERROR}')
+    return MAE > MAE_THRESHOLD or MAX_N_ERROR > MAX_N_ERROR_THRESHOLD
 
 
 def run_pipeline(version_name: str):
     client = KfpClient(host=KFP_URL)
-    pipeline_id = client.get_pipeline_id(PIPELINE_NAME)
+    pipeline_id = client.get_pipeline_id(config.PIPELINE_NAME)
     experiment_id = get_experient_id(client)
     if pipeline_id is None:
-        raise Exception(f'Pipeline {PIPELINE_NAME} not found')
+        raise Exception(f'Pipeline {config.PIPELINE_NAME} not found')
 
-    res = client.list_pipeline_versions(pipeline_id)
+    res = client.list_pipeline_versions(pipeline_id, sort_by='created_at desc')
     versions = res.pipeline_versions if res.pipeline_versions else []
     version = next(
         (ver for ver in versions if ver.display_name == version_name),
@@ -97,19 +98,20 @@ def run_pipeline(version_name: str):
     if version is None:
         raise Exception(f'Pipeline version {version_name} not found')
 
-    logger.info(f'Running {PIPELINE_NAME}...')
+    logger.info(f'Running {config.PIPELINE_NAME}...')
     params = {
-        "bucket_name": BUCKET_NAME,
-        "file_name": PROD_DATA,
-        "experiment_name": EXPERIMENT_NAME,
+        'bucket_name': config.BUCKET_NAME,
+        'file_name': config.PROD_DATA,
+        'experiment_name': config.EXPERIMENT_NAME,
     }
     client.run_pipeline(
         experiment_id=experiment_id,
         job_name='Retrain',
         pipeline_id=pipeline_id,
         version_id=version.pipeline_version_id,
-        pipeline_root=PIPELINE_ROOT,
+        pipeline_root=config.PIPELINE_ROOT,
         params=params,
+        enable_caching=False,
     )
 
 
@@ -130,4 +132,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pipeline_version', type=str)
     args = parser.parse_args()
-    retraining_trigger(args.pipeline_version)
+
+    while True:
+        retraining_trigger(args.pipeline_version)
+        time.sleep(7)
