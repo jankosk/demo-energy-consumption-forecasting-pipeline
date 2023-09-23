@@ -9,7 +9,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: pvc-inspector
-  namespace: retraining-job
+  namespace: retrainer
 spec:
   containers:
   - image: busybox
@@ -22,11 +22,11 @@ spec:
   volumes:
   - name: pv
     persistentVolumeClaim:
-      claimName: retraining-pvc
+      claimName: retrainer-pvc
 EOF
 
-kubectl -n retraining-job wait --for=condition=ready pod pvc-inspector
+kubectl -n retrainer wait --for=condition=ready pod pvc-inspector
 echo "Deleting file $FILE_NAME from volume..."
-kubectl -n retraining-job exec -it pvc-inspector -- sh -c "rm /data/$FILE_NAME"
+kubectl -n retrainer exec -it pvc-inspector -- sh -c "rm /data/$FILE_NAME"
 
-kubectl -n retraining-job delete pod pvc-inspector
+kubectl -n retrainer delete pod pvc-inspector

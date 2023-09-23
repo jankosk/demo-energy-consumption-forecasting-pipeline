@@ -67,11 +67,11 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             image=image
         )
 
-        deploy_trigger = load_component(
-            'deploy_trigger_component.yaml',
+        deploy_retrainer = load_component(
+            'deploy_retrainer_component.yaml',
             image_digest
         )
-        deploy_task = deploy_trigger(
+        deploy_task = deploy_retrainer(
             image=image,
             pipeline_version=pipeline_version
         )

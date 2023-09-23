@@ -9,7 +9,7 @@ config.load_incluster_config()
 
 
 def deploy(image: str, pipeline_version: str):
-    namespace = 'retraining-job'
+    namespace = 'retrainer'
     pod_name = 'retrainer-pod'
     deployment_name = 'retrainer-deployment'
 
@@ -20,7 +20,7 @@ def deploy(image: str, pipeline_version: str):
             client.V1Container(
                 name=pod_name,
                 command=['python3'],
-                args=['-m', 'training.retraining_trigger',
+                args=['-m', 'inference.retrainer',
                     '--pipeline_version', pipeline_version],
                 image=image,
                 volume_mounts=[client.V1VolumeMount(
@@ -32,7 +32,7 @@ def deploy(image: str, pipeline_version: str):
         volumes=[client.V1Volume(
             name='pv',
             persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(
-                claim_name='retraining-pvc',
+                claim_name='retrainer-pvc',
             )
         )]
     )

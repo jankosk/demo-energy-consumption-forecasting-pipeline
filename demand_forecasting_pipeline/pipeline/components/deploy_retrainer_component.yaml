@@ -1,5 +1,5 @@
-name: Deploy trigger
-description: Deploy retraining trigger
+name: Deploy retrainer
+description: Deploy retrainer service
 
 inputs:
   - {name: image, type: String}
@@ -11,7 +11,7 @@ implementation:
     command: [
       python3,
       -m,
-      pipeline.deploy_trigger,
+      pipeline.deploy_retrainer,
       --image, {inputValue: image},
       --pipeline_version, {inputValue: pipeline_version}
     ]

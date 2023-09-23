@@ -23,15 +23,15 @@ isvc-logs:
 
 RETRAINER_POD = retrainer-pod
 retrainer-logs:
-	kubectl -n retraining-job logs -l app=${RETRAINER_POD} -f
+	kubectl -n retrainer logs -l app=${RETRAINER_POD} -f
 
 RETRAINER_DEPLOYMENT = retrainer-deployment
 kill-retrainer:
-	kubectl -n retraining-job delete deployment ${RETRAINER_DEPLOYMENT}
+	kubectl -n retrainer delete deployment ${RETRAINER_DEPLOYMENT}
 
 run-experiment:
 	python -m experiment.simulate_retraining
 
 clear-experiment:
 	python -m experiment.set_initial_data
-	./scripts/clear_job_data.sh
+	./scripts/clear_volume.sh

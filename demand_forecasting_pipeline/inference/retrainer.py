@@ -5,7 +5,7 @@ import numpy as np
 import time
 from minio import Minio, error
 from kfp import Client as KfpClient
-from .preprocess import process_df
+from training.preprocess import process_df
 from shared import config
 from shared.utils import get_experient_id
 from pathlib import Path
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def retraining_trigger(pipeline_version: str):
+def retrainer(pipeline_version: str):
     data_predictions = 'predictions.csv'
     data_prod = 'data.csv'
     minio_client = Minio(
@@ -134,5 +134,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     while True:
-        retraining_trigger(args.pipeline_version)
+        retrainer(args.pipeline_version)
         time.sleep(7)

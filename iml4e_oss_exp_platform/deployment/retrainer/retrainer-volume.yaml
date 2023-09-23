@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: retraining-pv
+  name: retrainer-pv
 spec:
   capacity:
     storage: 1Gi
@@ -15,13 +15,13 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  namespace: retraining-job
-  name: retraining-pvc
+  namespace: retrainer
+  name: retrainer-pvc
 spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: manual
-  volumeName: retraining-pv
+  volumeName: retrainer-pv
   resources:
     requests:
       storage: 1Gi
