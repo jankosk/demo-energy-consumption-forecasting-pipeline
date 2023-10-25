@@ -1,9 +1,10 @@
+.PHONY: build forward-ports kill-ports run-pipeline run-inference isvc-logs retrainer-logs run-experiment clear-experiment
+
 IMAGE_NAME = 127.0.0.1:5001/training
 IMAGE_DIGEST = $(shell docker inspect --format='{{index .RepoDigests 0}}' "$(IMAGE_NAME)" | cut -d'@' -f2)
 
 build:
 	./scripts/build.sh
-
 forward-ports:
 	./scripts/forward_ports.sh
 
