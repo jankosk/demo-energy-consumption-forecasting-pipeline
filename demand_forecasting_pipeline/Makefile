@@ -5,6 +5,7 @@ IMAGE_DIGEST = $(shell docker inspect --format='{{index .RepoDigests 0}}' "$(IMA
 
 build:
 	./scripts/build.sh
+
 forward-ports:
 	./scripts/forward_ports.sh
 

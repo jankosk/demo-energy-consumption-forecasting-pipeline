@@ -1,7 +1,7 @@
 FROM python:3.10-slim
 
 # Install git for MLFlow client
-RUN apt-get update && apt-get install git -y && \
+RUN apt-get update && apt-get install -y git gcc python3-dev && \
     pip install -U --no-cache-dir pip
 
 WORKDIR /app
