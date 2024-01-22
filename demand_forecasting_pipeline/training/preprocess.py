@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 import pandas as pd
+from neuralprophet import df_utils
 
 
 def preprocess(input_path: Path, output_dir: Path):
@@ -33,6 +34,9 @@ def process_df(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df.sort_values(by='ds')
     df = df.drop_duplicates(subset=['ds', 'Property_id', 'y'])
+
+    df = df_utils.handle_negative_values(df, 'y', 0.0)
+    df['y'] *= 1000  # Convert to kWh
 
     return df
 

@@ -95,7 +95,7 @@ def run_experiment():
             logger.info('Waiting for retraining to complete...')
             kfp_client.wait_for_run_completion(
                 run_id=str(active_run.run_id),
-                timeout=60 * 5
+                timeout=60 * 15
             )
             time.sleep(30)
         get_forecast(curr_date)

@@ -80,7 +80,9 @@ def load_data(csv_path: Path):
 def evaluate_forecast(preds: pd.Series, actual: pd.Series) -> Dict[str, float]:
     mae = cast(float, metrics.mean_absolute_error(y_true=actual, y_pred=preds))
     mse = cast(float, metrics.mean_squared_error(y_true=actual, y_pred=preds))
-    return {'MAE': mae, 'MSE': mse}
+    mape = cast(float, metrics.mean_absolute_percentage_error(
+        y_true=actual, y_pred=preds)) * 100
+    return {'MAE': mae, 'MSE': mse, 'MAPE': mape}
 
 
 def log_training_metrics(training_metrics: pd.DataFrame):

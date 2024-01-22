@@ -5,7 +5,7 @@ import numpy as np
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from neuralprophet import NeuralProphet, utils as np_utils
+from neuralprophet import NeuralProphet, utils as np_utils, df_utils
 from typing import Dict
 from kserve import Model, ModelServer
 from training.preprocess import process_df
@@ -78,7 +78,8 @@ class NeuralProphetModel(Model):
         n, m = forecast.shape
         identity_matrix = np.eye(N=n, M=m, k=2, dtype=bool)
         yhat = forecast.values[identity_matrix]
-        return pd.DataFrame({'ds': forecast['ds'], 'yhat': yhat})
+        forecast = pd.DataFrame({'ds': forecast['ds'], 'yhat': yhat})
+        return df_utils.handle_negative_values(forecast, 'yhat', 0.0)
 
     def save_forecast(self, forecast: pd.DataFrame):
         data_path = Path('updated_predictions.csv')

@@ -1,8 +1,8 @@
 import logging
 import argparse
 import pandas as pd
-import numpy as np
 import time
+from collections import namedtuple
 from minio import Minio, error
 from kfp import Client as KfpClient
 from training.preprocess import process_df
@@ -15,6 +15,8 @@ from sklearn import metrics
 VOLUME_MOUNT_PATH = Path('/data')
 LAST_RUN_FILE_PATH = VOLUME_MOUNT_PATH / 'last_run.timestamp'
 KFP_URL = 'http://ml-pipeline-ui.kubeflow'
+
+Thresholds = namedtuple('Thresholds', 'MAE MAPE')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -62,24 +64,38 @@ def retrainer(pipeline_version: str):
                       (prod_df.ds <= until_date)]
     actual = prod_df.y.values
     preds = predictions_df.yhat.values
+    min_length = min(len(actual), len(preds))
 
-    if should_retrain(actual, preds):
+    if should_retrain(actual[:min_length], preds[:min_length]):
         run_pipeline(pipeline_version)
         next_date = until_date
         update_timestamp(next_date)
 
 
 def should_retrain(actual, predictions):
-    diff = np.sort(np.abs(actual - predictions))
-    if len(diff) <= 24:
+    errors_len = len(predictions)
+    MIN_ERRORS = 24  # One day
+    if errors_len <= MIN_ERRORS:
         return False
-    MAE = metrics.mean_absolute_error(actual, predictions)
-    MAE_THRESHOLD = 0.05
-    MAX_N_ERROR = diff[-24:].mean()
-    MAX_N_ERROR_THRESHOLD = 0.1
+
+    MAE = float(metrics.mean_absolute_error(actual, predictions))
+    MAPE = float(metrics.mean_absolute_percentage_error(
+        actual, predictions))
+    thresholds = get_thresholds(errors_len)
+
     logger.info(f'MAE: {MAE}')
-    logger.info(f'MAX AVG ERROR: {MAX_N_ERROR}')
-    return MAE > MAE_THRESHOLD or MAX_N_ERROR > MAX_N_ERROR_THRESHOLD
+    logger.info(f'MAPE: {MAPE * 100}%')
+
+    return MAE > thresholds.MAE or MAPE > thresholds.MAPE
+
+
+def get_thresholds(errors_len: int) -> Thresholds:
+    MAE = 100  # kWh
+    MAPE = 0.2
+    if errors_len < 3:
+        MAE = 150  # kWh
+        MAPE = 0.3
+    return Thresholds(MAE=MAE, MAPE=MAPE)
 
 
 def run_pipeline(version_name: str):
