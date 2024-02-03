@@ -2,14 +2,19 @@ import argparse
 from pathlib import Path
 import pandas as pd
 from neuralprophet import df_utils
+from shared.config import N_LAGS, N_FORECASTS
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def preprocess(input_path: Path, output_dir: Path):
     df = pd.read_csv(input_path)
     df = process_df(df)
 
-    train_valid_len = int(len(df) * 0.9)
-    train_len = int(train_valid_len * 0.9)
+    train_valid_len = len(df) - N_LAGS
+    train_len = train_valid_len - N_LAGS - N_FORECASTS
 
     df_train = df.iloc[:train_len]
     df_valid = df.iloc[train_len:train_valid_len]
@@ -35,8 +40,7 @@ def process_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(by='ds')
     df = df.drop_duplicates(subset=['ds', 'Property_id', 'y'])
 
-    df = df_utils.handle_negative_values(df, 'y', 0.0)
-    df['y'] *= 1000  # Convert to kWh
+    df = df_utils.handle_negative_values(df, 'y', 1e-2)
 
     return df
 

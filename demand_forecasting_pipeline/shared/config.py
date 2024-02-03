@@ -7,6 +7,8 @@ PREDICTIONS_DATA = 'predictions.csv'
 EXPERIMENT_NAME = 'PRODUCTION'
 PIPELINE_NAME = 'Energy Demand Forecasting Pipeline'
 PIPELINE_ROOT = 'minio://mlpipeline/v2/artifacts'
+N_FORECASTS = 24
+N_LAGS = 24 * 7
 
 S3_MINIO_ENDPOINT = os.getenv(
     'S3_MINIO_ENDPOINT',

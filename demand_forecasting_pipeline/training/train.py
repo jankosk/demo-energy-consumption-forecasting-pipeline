@@ -2,20 +2,21 @@ import os
 import logging
 import argparse
 import json
-from typing import Dict, cast
+from typing import Dict
 from pathlib import Path
 from neuralprophet import NeuralProphet, utils as np_utils
 import mlflow
 import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
+from inference.inference_service import process_forecast
+from shared.config import N_FORECASTS, N_LAGS
+from torchmetrics.regression import mae, mape
 
 MLFLOW_TRACKING_URI = os.getenv(
     'MLFLOW_TRACKING_URI',
     'http://mlflow.mlflow.svc.cluster.local:5000'
 )
-N_FORECASTS = 24
-N_LAGS = 24
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,26 +35,33 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
     with mlflow.start_run() as run:
         model = NeuralProphet(
             n_forecasts=N_FORECASTS,
-            n_lags=N_LAGS
+            n_lags=N_LAGS,
+            yearly_seasonality=True,
+            impute_missing=True,
+            collect_metrics={
+                'MAPE': mape.MeanAbsolutePercentageError(),
+                'MAE': mae.MeanAbsoluteError()
+            }
         )
         model.add_country_holidays(country_name='Finland')
-        model.add_lagged_regressor('Temp_outside')
+        model.add_lagged_regressor('Temp_outside', n_lags=N_LAGS)
 
         training_metrics = model.fit(
             df=df_train,
             validation_df=df_valid,
+            early_stopping=True,
             progress=None,
-            early_stopping=False,
+            freq='H'
         )
         if training_metrics is None:
             raise Exception('Failed to fit model')
         log_training_metrics(training_metrics)
 
-        forecast = model.predict(df_test)
+        df_test_lags = pd.concat([df_valid.tail(N_LAGS), df_test])
+        forecasts = forecast(df_test=df_test_lags, model=model)
         test_metrics = evaluate_forecast(
-            actual=df_test.y[N_LAGS:],
-            preds=forecast.yhat1[N_LAGS:]
-        )
+            actual=df_test.y,
+            preds=forecasts.yhat)
         mlflow.log_metrics(test_metrics)
 
         if not output_dir.exists():
@@ -61,7 +69,7 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
 
         fig, ax = plt.subplots(figsize=(15, 8))
         ax.plot(df_test.ds, df_test.y, 'r', label='Actual')
-        ax.plot(forecast.ds, forecast.yhat1, 'b', label='Forecast')
+        ax.plot(forecasts.ds, forecasts.yhat, 'b', label='Forecast')
         ax.legend()
 
         log_model(model, output_dir)
@@ -77,11 +85,24 @@ def load_data(csv_path: Path):
     return df
 
 
+def forecast(df_test: pd.DataFrame, model: NeuralProphet):
+    n_tests = int(N_LAGS / N_FORECASTS)
+    forecasts = pd.DataFrame()
+    for n in range(n_tests):
+        from_idx = n * N_FORECASTS
+        forecast_df = model.make_future_dataframe(
+            df=df_test.iloc[from_idx:from_idx + N_LAGS])
+        forecast = model.predict(forecast_df)
+        forecast = process_forecast(forecast)
+        forecasts = pd.concat([forecasts, forecast])
+    return forecasts
+
+
 def evaluate_forecast(preds: pd.Series, actual: pd.Series) -> Dict[str, float]:
-    mae = cast(float, metrics.mean_absolute_error(y_true=actual, y_pred=preds))
-    mse = cast(float, metrics.mean_squared_error(y_true=actual, y_pred=preds))
-    mape = cast(float, metrics.mean_absolute_percentage_error(
-        y_true=actual, y_pred=preds)) * 100
+    mae = float(metrics.mean_absolute_error(y_true=actual, y_pred=preds))
+    mse = float(metrics.mean_squared_error(y_true=actual, y_pred=preds))
+    mape = float(metrics.mean_absolute_percentage_error(
+        y_true=actual, y_pred=preds))
     return {'MAE': mae, 'MSE': mse, 'MAPE': mape}
 
 

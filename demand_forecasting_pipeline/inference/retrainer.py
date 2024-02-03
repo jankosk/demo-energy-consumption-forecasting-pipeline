@@ -1,6 +1,7 @@
 import logging
 import argparse
 import pandas as pd
+import numpy as np
 import time
 from collections import namedtuple
 from minio import Minio, error
@@ -79,22 +80,19 @@ def should_retrain(actual, predictions):
         return False
 
     MAE = float(metrics.mean_absolute_error(actual, predictions))
-    MAPE = float(metrics.mean_absolute_percentage_error(
-        actual, predictions))
-    thresholds = get_thresholds(errors_len)
+    MAPE = float(metrics.mean_absolute_percentage_error(actual, predictions))
+    thresholds = get_thresholds()
 
     logger.info(f'MAE: {MAE}')
-    logger.info(f'MAPE: {MAPE * 100}%')
+    logger.info(f'MAPE: {MAPE}')
+    logger.info(np.c_[actual, predictions])
 
     return MAE > thresholds.MAE or MAPE > thresholds.MAPE
 
 
-def get_thresholds(errors_len: int) -> Thresholds:
-    MAE = 100  # kWh
-    MAPE = 0.2
-    if errors_len < 3:
-        MAE = 150  # kWh
-        MAPE = 0.3
+def get_thresholds() -> Thresholds:
+    MAE = 0.15
+    MAPE = 0.5
     return Thresholds(MAE=MAE, MAPE=MAPE)
 
 
@@ -132,16 +130,17 @@ def run_pipeline(version_name: str):
 
 
 def update_timestamp(timestamp: datetime):
-    with open(LAST_RUN_FILE_PATH, 'w') as f:
+    with open(LAST_RUN_FILE_PATH, 'a') as f:
         ts = timestamp.isoformat()
         logger.info(f'Updating timestamp with {ts}')
-        f.write(ts)
+        f.write(ts + '\n')
 
 
 def get_timestamp() -> datetime:
     with open(LAST_RUN_FILE_PATH, 'r') as f:
-        data = f.read()
-        return datetime.fromisoformat(data)
+        lines = f.readlines()
+        ts = lines[-1].strip()
+        return datetime.fromisoformat(ts)
 
 
 if __name__ == '__main__':

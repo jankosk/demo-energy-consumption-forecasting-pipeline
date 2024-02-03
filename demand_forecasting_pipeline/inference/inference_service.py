@@ -14,7 +14,6 @@ from minio import Minio, error
 
 MODEL_URI = os.environ.get('MODEL_URI', '/mnt/models/model.np')
 MODEL_VERSION = os.environ.get('MODEL_VERSION')
-PERIODS = 24
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class NeuralProphetModel(Model):
     model: NeuralProphet
-    read: bool
+    ready: bool
 
     def __init__(self, name: str):
         super().__init__(name)
@@ -45,8 +44,10 @@ class NeuralProphetModel(Model):
         from_date_param = data.get('from_date')
         from_date = datetime.fromisoformat(from_date_param)
 
-        prev_n_steps_df = self.fetch_previous_n_steps(from_date)
-        if len(prev_n_steps_df) < PERIODS:
+        gt_df = self.get_ground_truth_data()
+
+        prev_n_steps_df = self.fetch_previous_n_steps(gt_df, from_date)
+        if len(prev_n_steps_df) < config.N_LAGS:
             empty_df = pd.DataFrame()
             logger.error(f'Forecast for {from_date.isoformat()} ({len(prev_n_steps_df)}) not available')  # noqa E501
             return empty_df.to_dict()
@@ -54,32 +55,20 @@ class NeuralProphetModel(Model):
         forecast_df = self.model.make_future_dataframe(prev_n_steps_df)
 
         forecast = self.model.predict(forecast_df)
-        forecast = self.process_forecast(forecast)
+        min = get_lowest_non_zero_val(gt_df)
+        forecast = process_forecast(forecast, min)
         self.save_forecast(forecast)
 
         return forecast.to_dict()
 
-    def fetch_previous_n_steps(self, from_date: datetime) -> pd.DataFrame:
-        data_path = 'ground_truth.csv'
-        self.minio_client.fget_object(
-            config.BUCKET_NAME,
-            config.PROD_DATA,
-            data_path
-        )
-        df = pd.read_csv(data_path)
-        df = process_df(df)
-        df = df[['ds', 'y', 'Temp_outside']]
-        prev_n_date = from_date - timedelta(hours=PERIODS)
-
+    def fetch_previous_n_steps(
+        self,
+        gt_df: pd.DataFrame,
+        from_date: datetime
+    ) -> pd.DataFrame:
+        df = gt_df[['ds', 'y', 'Temp_outside']]
+        prev_n_date = from_date - timedelta(hours=config.N_LAGS)
         return df[(df.ds <= from_date) & (df.ds >= prev_n_date)]
-
-    def process_forecast(self, df: pd.DataFrame) -> pd.DataFrame:
-        forecast = df.tail(PERIODS)
-        n, m = forecast.shape
-        identity_matrix = np.eye(N=n, M=m, k=2, dtype=bool)
-        yhat = forecast.values[identity_matrix]
-        forecast = pd.DataFrame({'ds': forecast['ds'], 'yhat': yhat})
-        return df_utils.handle_negative_values(forecast, 'yhat', 0.0)
 
     def save_forecast(self, forecast: pd.DataFrame):
         data_path = Path('updated_predictions.csv')
@@ -103,6 +92,30 @@ class NeuralProphetModel(Model):
             return pd.read_csv(data_path, parse_dates=['ds'])
         except error.S3Error:
             return pd.DataFrame({'ds': [], 'yhat': []})
+
+    def get_ground_truth_data(self) -> pd.DataFrame:
+        data_path = 'ground_truth.csv'
+        self.minio_client.fget_object(
+            config.BUCKET_NAME,
+            config.PROD_DATA,
+            data_path
+        )
+        df = pd.read_csv(data_path)
+        return process_df(df)
+
+
+def process_forecast(df: pd.DataFrame, min: float = 1e-2) -> pd.DataFrame:
+    forecast = df.tail(config.N_FORECASTS)
+    n, m = forecast.shape
+    identity_matrix = np.eye(N=n, M=m, k=2, dtype=bool)
+    yhat = forecast.values[identity_matrix]
+    forecast = pd.DataFrame({'ds': forecast['ds'], 'yhat': yhat})
+    return df_utils.handle_negative_values(forecast, 'yhat', min)
+
+
+def get_lowest_non_zero_val(df: pd.DataFrame) -> float:
+    non_zero_vals = df[df['y'] > 0]
+    return non_zero_vals['y'].min()
 
 
 if __name__ == "__main__":
