@@ -1,5 +1,7 @@
+import numpy as np
 from kfp import Client as KfpClient
 from .config import EXPERIMENT_NAME
+import pandas as pd
 
 
 def get_experient_id(kfp_client: KfpClient) -> str:
@@ -8,3 +10,14 @@ def get_experient_id(kfp_client: KfpClient) -> str:
     if experiment_id is None:
         raise Exception(f'Kubeflow experiment {EXPERIMENT_NAME} not found')
     return experiment_id
+
+
+def handle_zeros_and_negatives(df: pd.DataFrame, col: str, min: float = 1e-5):
+    df.loc[df[col] <= 0.0, col] = min
+    return df
+
+
+def smape(y_true, y_pred) -> float:
+    numerator = np.abs(y_pred - y_true)
+    denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
+    return 100 * np.mean(numerator / denominator)

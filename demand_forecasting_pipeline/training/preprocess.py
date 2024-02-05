@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import pandas as pd
-from neuralprophet import df_utils
+from shared.utils import handle_zeros_and_negatives
 from shared.config import N_LAGS, N_FORECASTS
 import logging
 
@@ -40,7 +40,7 @@ def process_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(by='ds')
     df = df.drop_duplicates(subset=['ds', 'Property_id', 'y'])
 
-    df = df_utils.handle_negative_values(df, 'y', 1e-2)
+    df = handle_zeros_and_negatives(df, 'y')
 
     return df
 

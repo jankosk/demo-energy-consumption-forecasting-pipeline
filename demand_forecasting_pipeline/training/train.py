@@ -11,7 +11,8 @@ from sklearn import metrics
 import matplotlib.pyplot as plt
 from inference.inference_service import process_forecast
 from shared.config import N_FORECASTS, N_LAGS
-from torchmetrics.regression import mae, mape
+from shared.utils import smape
+from torchmetrics.regression import mae, symmetric_mape
 
 MLFLOW_TRACKING_URI = os.getenv(
     'MLFLOW_TRACKING_URI',
@@ -36,10 +37,9 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
         model = NeuralProphet(
             n_forecasts=N_FORECASTS,
             n_lags=N_LAGS,
-            yearly_seasonality=True,
             impute_missing=True,
             collect_metrics={
-                'MAPE': mape.MeanAbsolutePercentageError(),
+                'SMAPE': symmetric_mape.SymmetricMeanAbsolutePercentageError(),
                 'MAE': mae.MeanAbsoluteError()
             }
         )
@@ -60,8 +60,8 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
         df_test_lags = pd.concat([df_valid.tail(N_LAGS), df_test])
         forecasts = forecast(df_test=df_test_lags, model=model)
         test_metrics = evaluate_forecast(
-            actual=df_test.y,
-            preds=forecasts.yhat)
+            actual=df_test.y.values,
+            preds=forecasts.yhat.values)
         mlflow.log_metrics(test_metrics)
 
         if not output_dir.exists():
@@ -98,12 +98,11 @@ def forecast(df_test: pd.DataFrame, model: NeuralProphet):
     return forecasts
 
 
-def evaluate_forecast(preds: pd.Series, actual: pd.Series) -> Dict[str, float]:
+def evaluate_forecast(preds, actual) -> Dict[str, float]:
     mae = float(metrics.mean_absolute_error(y_true=actual, y_pred=preds))
     mse = float(metrics.mean_squared_error(y_true=actual, y_pred=preds))
-    mape = float(metrics.mean_absolute_percentage_error(
-        y_true=actual, y_pred=preds))
-    return {'MAE': mae, 'MSE': mse, 'MAPE': mape}
+    _smape = smape(actual, preds)
+    return {'MAE': mae, 'MSE': mse, 'SMAPE': _smape}
 
 
 def log_training_metrics(training_metrics: pd.DataFrame):

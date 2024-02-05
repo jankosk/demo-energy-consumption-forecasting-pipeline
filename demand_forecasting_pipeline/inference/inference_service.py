@@ -5,9 +5,10 @@ import numpy as np
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from neuralprophet import NeuralProphet, utils as np_utils, df_utils
+from neuralprophet import NeuralProphet, utils as np_utils
 from typing import Dict
 from kserve import Model, ModelServer
+from shared.utils import handle_zeros_and_negatives
 from training.preprocess import process_df
 from shared import config
 from minio import Minio, error
@@ -110,7 +111,7 @@ def process_forecast(df: pd.DataFrame, min: float = 1e-2) -> pd.DataFrame:
     identity_matrix = np.eye(N=n, M=m, k=2, dtype=bool)
     yhat = forecast.values[identity_matrix]
     forecast = pd.DataFrame({'ds': forecast['ds'], 'yhat': yhat})
-    return df_utils.handle_negative_values(forecast, 'yhat', min)
+    return handle_zeros_and_negatives(forecast, 'yhat', min)
 
 
 def get_lowest_non_zero_val(df: pd.DataFrame) -> float:

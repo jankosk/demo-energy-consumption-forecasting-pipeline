@@ -3,12 +3,11 @@ import argparse
 import pandas as pd
 import numpy as np
 import time
-from collections import namedtuple
 from minio import Minio, error
 from kfp import Client as KfpClient
 from training.preprocess import process_df
 from shared import config
-from shared.utils import get_experient_id
+from shared.utils import get_experient_id, smape
 from pathlib import Path
 from datetime import datetime
 from sklearn import metrics
@@ -16,8 +15,6 @@ from sklearn import metrics
 VOLUME_MOUNT_PATH = Path('/data')
 LAST_RUN_FILE_PATH = VOLUME_MOUNT_PATH / 'last_run.timestamp'
 KFP_URL = 'http://ml-pipeline-ui.kubeflow'
-
-Thresholds = namedtuple('Thresholds', 'MAE MAPE')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,27 +70,29 @@ def retrainer(pipeline_version: str):
         update_timestamp(next_date)
 
 
-def should_retrain(actual, predictions):
-    errors_len = len(predictions)
+def should_retrain(actual, preds):
+    errors_len = len(preds)
     MIN_ERRORS = 24  # One day
     if errors_len <= MIN_ERRORS:
         return False
-
-    MAE = float(metrics.mean_absolute_error(actual, predictions))
-    MAPE = float(metrics.mean_absolute_percentage_error(actual, predictions))
-    thresholds = get_thresholds()
-
-    logger.info(f'MAE: {MAE}')
-    logger.info(f'MAPE: {MAPE}')
-    logger.info(np.c_[actual, predictions])
-
-    return MAE > thresholds.MAE or MAPE > thresholds.MAPE
+    logger.info(np.c_[actual, preds])
+    abs_error_exceeded = check_absolute_error(actual, preds)
+    relative_error_exceeded = check_relative_error(actual, preds)
+    return abs_error_exceeded and relative_error_exceeded
 
 
-def get_thresholds() -> Thresholds:
-    MAE = 0.15
-    MAPE = 0.5
-    return Thresholds(MAE=MAE, MAPE=MAPE)
+def check_absolute_error(actual, preds) -> bool:
+    MAE = float(metrics.mean_absolute_error(actual, preds))
+    MAX_MAE = 0.1
+    logger.info(f'MAE: {MAE} / {MAX_MAE}')
+    return MAE < MAX_MAE
+
+
+def check_relative_error(actual, preds) -> bool:
+    SMAPE = smape(actual, preds)
+    MAX_SMAPE = 20
+    logger.info(f'SMAPE: {SMAPE} / {MAX_SMAPE}')
+    return MAX_SMAPE < MAX_SMAPE
 
 
 def run_pipeline(version_name: str):
