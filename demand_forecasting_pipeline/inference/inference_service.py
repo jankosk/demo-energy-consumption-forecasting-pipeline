@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from neuralprophet import NeuralProphet, utils as np_utils
 from typing import Dict
-from kserve import Model, ModelServer
+from kserve import Model, ModelServer, exceptions
 from shared.utils import handle_zeros_and_negatives
 from training.preprocess import process_df
 from shared import config
@@ -44,16 +44,29 @@ class NeuralProphetModel(Model):
         data = json.loads(payload)
         from_date_param = data.get('from_date')
         from_date = datetime.fromisoformat(from_date_param)
+        logger.info(f'Forecasting from {from_date} - {from_date + timedelta(hours=config.N_FORECASTS)}') # noqa E501
 
         gt_df = self.get_ground_truth_data()
 
+        temp_forecast_df = self.get_temperature_forecast()
         prev_n_steps_df = self.fetch_previous_n_steps(gt_df, from_date)
         if len(prev_n_steps_df) < config.N_LAGS:
-            empty_df = pd.DataFrame()
-            logger.error(f'Forecast for {from_date.isoformat()} ({len(prev_n_steps_df)}) not available')  # noqa E501
-            return empty_df.to_dict()
+            logger.error(f'Previous steps unavailable\n{prev_n_steps_df.to_string()}')  # noqa E501
+            raise exceptions.ApiException(
+                status=400,
+                reason='Previous steps unavailable'
+            )
+        if len(temp_forecast_df) < config.N_FORECASTS:
+            logger.error(f'Temperature forecast unavailable\n{temp_forecast_df.to_string()}')  # noqa E501
+            raise exceptions.ApiException(
+                status=400,
+                reason='Temperature forecast unavailable'
+            )
 
-        forecast_df = self.model.make_future_dataframe(prev_n_steps_df)
+        forecast_df = self.model.make_future_dataframe(
+            df=prev_n_steps_df,
+            regressors_df=temp_forecast_df
+        )
 
         forecast = self.model.predict(forecast_df)
         min = get_lowest_non_zero_val(gt_df)
@@ -69,7 +82,27 @@ class NeuralProphetModel(Model):
     ) -> pd.DataFrame:
         df = gt_df[['ds', 'y', 'Temp_outside']]
         prev_n_date = from_date - timedelta(hours=config.N_LAGS)
-        return df[(df.ds <= from_date) & (df.ds >= prev_n_date)]
+        df = df[(df.ds <= from_date) & (df.ds > prev_n_date)]
+        df.set_index('ds', inplace=True)
+        df = df.resample('H').asfreq()
+        df.reset_index(inplace=True)
+        mean_temp = df['Temp_outside'].mean()
+        mean_y = df['y'].mean()
+        df['Temp_outside'].fillna(mean_temp)
+        df['y'].fillna(mean_y)
+        return df
+
+    def get_temperature_forecast(self) -> pd.DataFrame:
+        try:
+            data_path = 'temp_forecast.csv'
+            self.minio_client.fget_object(
+                config.BUCKET_NAME,
+                config.TEMP_FORECAST_DATA,
+                data_path
+            )
+            return pd.read_csv(data_path)
+        except error.S3Error:
+            return pd.DataFrame({'ds': [], 'Temp_outside': []})
 
     def save_forecast(self, forecast: pd.DataFrame):
         data_path = Path('updated_predictions.csv')

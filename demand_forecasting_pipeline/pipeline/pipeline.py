@@ -36,7 +36,7 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
         pull_data_step = pull_data(
             bucket_name=bucket_name,
             file_name=file_name
-        )
+        ).set_caching_options(False)
 
         preprocess = load_component('preprocess_component.yaml', image_digest)
         preprocess_step = preprocess(
@@ -62,7 +62,7 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             'deploy_isvc_component.yaml',
             image_digest
         )
-        deploy_isvc_step = deploy_isvc(
+        deploy_isvc(
             input_dir=train_step.output,
             image=image
         )
@@ -75,7 +75,7 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             image=image,
             pipeline_version=pipeline_version
         )
-        deploy_task.after(deploy_isvc_step)
+        deploy_task.after(train_step)
 
     return pipeline
 

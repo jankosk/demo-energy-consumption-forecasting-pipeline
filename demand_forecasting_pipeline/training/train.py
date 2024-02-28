@@ -11,8 +11,7 @@ from sklearn import metrics
 import matplotlib.pyplot as plt
 from inference.inference_service import process_forecast
 from shared.config import N_FORECASTS, N_LAGS
-from shared.utils import smape
-from torchmetrics.regression import mae, symmetric_mape
+from torchmetrics.regression import mae, mape
 
 MLFLOW_TRACKING_URI = os.getenv(
     'MLFLOW_TRACKING_URI',
@@ -38,13 +37,15 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
             n_forecasts=N_FORECASTS,
             n_lags=N_LAGS,
             impute_missing=True,
+            yearly_seasonality=True,
+            weekly_seasonality=True,
             collect_metrics={
-                'SMAPE': symmetric_mape.SymmetricMeanAbsolutePercentageError(),
+                'MAPE': mape.MeanAbsolutePercentageError(),
                 'MAE': mae.MeanAbsoluteError()
             }
         )
         model.add_country_holidays(country_name='Finland')
-        model.add_lagged_regressor('Temp_outside', n_lags=N_LAGS)
+        model.add_future_regressor('Temp_outside')
 
         training_metrics = model.fit(
             df=df_train,
@@ -79,9 +80,8 @@ def train(experiment_name: str, train_data_dir: Path, output_dir: Path):
 
 
 def load_data(csv_path: Path):
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, parse_dates=['ds'])
     df = df[['ds', 'y', 'Temp_outside']]
-    df['ds'] = pd.to_datetime(df['ds'])
     return df
 
 
@@ -90,8 +90,12 @@ def forecast(df_test: pd.DataFrame, model: NeuralProphet):
     forecasts = pd.DataFrame()
     for n in range(n_tests):
         from_idx = n * N_FORECASTS
+        until_idx = from_idx + N_LAGS
+        future_df = df_test.iloc[until_idx:until_idx + N_FORECASTS]
+        future_temp_df = future_df[['ds', 'Temp_outside']]
         forecast_df = model.make_future_dataframe(
-            df=df_test.iloc[from_idx:from_idx + N_LAGS])
+            df=df_test.iloc[from_idx:until_idx],
+            regressors_df=future_temp_df)
         forecast = model.predict(forecast_df)
         forecast = process_forecast(forecast)
         forecasts = pd.concat([forecasts, forecast])
@@ -101,8 +105,8 @@ def forecast(df_test: pd.DataFrame, model: NeuralProphet):
 def evaluate_forecast(preds, actual) -> Dict[str, float]:
     mae = float(metrics.mean_absolute_error(y_true=actual, y_pred=preds))
     mse = float(metrics.mean_squared_error(y_true=actual, y_pred=preds))
-    _smape = smape(actual, preds)
-    return {'MAE': mae, 'MSE': mse, 'SMAPE': _smape}
+    mape = float(metrics.mean_absolute_percentage_error(actual, preds)) * 100
+    return {'MAE': mae, 'MSE': mse, 'MAPE': mape}
 
 
 def log_training_metrics(training_metrics: pd.DataFrame):

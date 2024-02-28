@@ -1,13 +1,12 @@
 import logging
 import argparse
 import pandas as pd
-import numpy as np
 import time
 from minio import Minio, error
 from kfp import Client as KfpClient
 from training.preprocess import process_df
 from shared import config
-from shared.utils import get_experient_id, smape
+from shared.utils import get_experient_id
 from pathlib import Path
 from datetime import datetime
 from sklearn import metrics
@@ -62,37 +61,40 @@ def retrainer(pipeline_version: str):
                       (prod_df.ds <= until_date)]
     actual = prod_df.y.values
     preds = predictions_df.yhat.values
-    min_length = min(len(actual), len(preds))
 
-    if should_retrain(actual[:min_length], preds[:min_length]):
+    if should_retrain(actual, preds, len(prod_df)):
         run_pipeline(pipeline_version)
         next_date = until_date
         update_timestamp(next_date)
 
 
-def should_retrain(actual, preds):
-    errors_len = len(preds)
-    MIN_ERRORS = 24  # One day
-    if errors_len <= MIN_ERRORS:
+def should_retrain(actual, preds, all_data_len):
+    data_len = min(len(actual), len(preds))
+    min_len = all_data_len * 0.01
+    if data_len < config.N_FORECASTS:
         return False
-    logger.info(np.c_[actual, preds])
-    abs_error_exceeded = check_absolute_error(actual, preds)
-    relative_error_exceeded = check_relative_error(actual, preds)
+    forecast_actual = actual[-config.N_FORECASTS:]
+    forecast = preds[-config.N_FORECASTS:]
+    abs_error_exceeded = check_absolute_error(forecast_actual, forecast)
+    relative_error_exceeded = check_relative_error(forecast_actual, forecast)
+    if data_len < min_len:
+        logger.info('Not enough data for retraining')
+        return False
     return abs_error_exceeded and relative_error_exceeded
 
 
 def check_absolute_error(actual, preds) -> bool:
     MAE = float(metrics.mean_absolute_error(actual, preds))
-    MAX_MAE = 0.1
+    MAX_MAE = 0.05
     logger.info(f'MAE: {MAE} / {MAX_MAE}')
-    return MAE < MAX_MAE
+    return MAE > MAX_MAE
 
 
 def check_relative_error(actual, preds) -> bool:
-    SMAPE = smape(actual, preds)
-    MAX_SMAPE = 20
-    logger.info(f'SMAPE: {SMAPE} / {MAX_SMAPE}')
-    return MAX_SMAPE < MAX_SMAPE
+    MAPE = float(metrics.mean_absolute_percentage_error(actual, preds)) * 100
+    MAX_MAPE = 20
+    logger.info(f'MAPE: {MAPE} / {MAX_MAPE}')
+    return MAPE > MAX_MAPE
 
 
 def run_pipeline(version_name: str):
@@ -119,7 +121,7 @@ def run_pipeline(version_name: str):
     }
     client.run_pipeline(
         experiment_id=experiment_id,
-        job_name='Retrain',
+        job_name=f'Retrain {datetime.now()}',
         pipeline_id=pipeline_id,
         version_id=version.pipeline_version_id,
         pipeline_root=config.PIPELINE_ROOT,
@@ -149,4 +151,4 @@ if __name__ == '__main__':
 
     while True:
         retrainer(args.pipeline_version)
-        time.sleep(7)
+        time.sleep(5)

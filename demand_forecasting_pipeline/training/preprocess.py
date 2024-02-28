@@ -41,6 +41,9 @@ def process_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates(subset=['ds', 'Property_id', 'y'])
 
     df = handle_zeros_and_negatives(df, 'y')
+    df.set_index('ds', inplace=True)
+    df.resample('H').asfreq()
+    df.reset_index(inplace=True)
 
     return df
 

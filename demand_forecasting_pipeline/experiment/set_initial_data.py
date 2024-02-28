@@ -15,7 +15,8 @@ def upload():
         config.BUCKET_NAME,
         [
             DeleteObject(config.PREDICTIONS_DATA),
-            DeleteObject(config.PROD_DATA)
+            DeleteObject(config.PROD_DATA),
+            DeleteObject(config.TEMP_FORECAST_DATA)
         ]
     )
     for error in errors:
