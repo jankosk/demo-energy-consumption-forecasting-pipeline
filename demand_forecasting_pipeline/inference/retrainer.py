@@ -10,6 +10,7 @@ from shared.utils import get_experient_id
 from pathlib import Path
 from datetime import datetime
 from sklearn import metrics
+from prometheus_client import Gauge, Counter, start_http_server
 
 VOLUME_MOUNT_PATH = Path('/data')
 LAST_RUN_FILE_PATH = VOLUME_MOUNT_PATH / 'last_run.timestamp'
@@ -17,6 +18,10 @@ KFP_URL = 'http://ml-pipeline-ui.kubeflow'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+mae_metric = Gauge('model_mae', 'Mean Absolute Error (MAE)')
+mape_metric = Gauge('model_mape', 'Mean Absolute Percentage Error (MAPE)')
+retrain_metric = Counter('retrain', 'Number of retrains')
 
 
 def retrainer(pipeline_version: str):
@@ -66,6 +71,7 @@ def retrainer(pipeline_version: str):
         run_pipeline(pipeline_version)
         next_date = until_date
         update_timestamp(next_date)
+        retrain_metric.inc()
 
 
 def should_retrain(actual, preds, all_data_len):
@@ -86,6 +92,7 @@ def should_retrain(actual, preds, all_data_len):
 def check_absolute_error(actual, preds) -> bool:
     MAE = float(metrics.mean_absolute_error(actual, preds))
     MAX_MAE = 0.05
+    mae_metric.set(MAE)
     logger.info(f'MAE: {MAE} / {MAX_MAE}')
     return MAE > MAX_MAE
 
@@ -93,6 +100,7 @@ def check_absolute_error(actual, preds) -> bool:
 def check_relative_error(actual, preds) -> bool:
     MAPE = float(metrics.mean_absolute_percentage_error(actual, preds)) * 100
     MAX_MAPE = 20
+    mape_metric.set(MAPE)
     logger.info(f'MAPE: {MAPE} / {MAX_MAPE}')
     return MAPE > MAX_MAPE
 
@@ -148,6 +156,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pipeline_version', type=str)
     args = parser.parse_args()
+
+    start_http_server(9090)
 
     while True:
         retrainer(args.pipeline_version)

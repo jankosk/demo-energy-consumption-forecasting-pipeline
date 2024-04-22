@@ -50,7 +50,13 @@ def deploy(image: str, pipeline_version: str):
                 metadata=client.V1ObjectMeta(
                     namespace=namespace,
                     name=pod_name,
-                    labels={'app': pod_name}
+                    labels={'app': pod_name},
+                    annotations={
+                        'sidecar.istio.io/inject': 'false',
+                        'prometheus.io/scrape': 'true',
+                        'prometheus.io/path': '/metrics',
+                        'prometheus.io/port': "9090"
+                    }
                 ),
                 spec=pod
             )
