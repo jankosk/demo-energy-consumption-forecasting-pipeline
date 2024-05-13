@@ -4,6 +4,8 @@ description: Deploy retrainer service
 inputs:
   - {name: image, type: String}
   - {name: pipeline_version, type: String}
+  - {name: eval_json, type: LocalPath}
+  - {name: run_json, type: LocalPath}
 
 implementation:
   container:
@@ -13,5 +15,7 @@ implementation:
       -m,
       pipeline.deploy_retrainer,
       --image, {inputValue: image},
-      --pipeline_version, {inputValue: pipeline_version}
+      --pipeline_version, {inputValue: pipeline_version},
+      --eval_json, {inputPath: eval_json},
+      --run_json, {inputPath: run_json}
     ]

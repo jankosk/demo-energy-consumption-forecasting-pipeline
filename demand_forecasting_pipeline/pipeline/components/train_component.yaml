@@ -6,7 +6,7 @@ inputs:
   - {name: train_data_dir, type: LocalPath}
 
 outputs:
-  - {name: output_dir, type: LocalPath}
+  - {name: output_path, type: LocalPath}
 
 implementation:
   container:
@@ -17,6 +17,6 @@ implementation:
       training.train,
       --experiment_name, {inputValue: experiment_name},
       --train_data_dir, {inputPath: train_data_dir},
-      --output_dir, {outputPath: output_dir}
+      --output_path, {outputPath: output_path}
     ]
 

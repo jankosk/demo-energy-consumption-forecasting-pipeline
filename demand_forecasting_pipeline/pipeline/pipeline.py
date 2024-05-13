@@ -25,12 +25,25 @@ def load_component(
     return component
 
 
+def set_mlflow_access(task: dsl.PipelineTask):
+    task.set_env_variable('MLFLOW_S3_ENDPOINT_URL', MLFLOW_S3_ENDPOINT_URL)
+    kubernetes.use_secret_as_env(
+        task,
+        secret_name='aws-secret',
+        secret_key_to_env={
+            'AWS_ACCESS_KEY_ID': 'AWS_ACCESS_KEY_ID',
+            'AWS_SECRET_ACCESS_KEY': 'AWS_SECRET_ACCESS_KEY'
+        }
+    )
+
+
 def create_pipeline_func(image_digest: str, pipeline_version: str):
     @dsl.pipeline(name='Training')
     def pipeline(
         bucket_name: str,
         file_name: str,
-        experiment_name: str
+        experiment_name: str,
+        prev_run_id: str = ''
     ):
         pull_data = load_component('pull_data_component.yaml', image_digest)
         pull_data_step = pull_data(
@@ -48,14 +61,15 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             train_data_dir=preprocess_step.output,
             experiment_name=experiment_name
         )
-        kubernetes.use_secret_as_env(
-            train_step,
-            secret_name='aws-secret',
-            secret_key_to_env={
-                'AWS_ACCESS_KEY_ID': 'AWS_ACCESS_KEY_ID',
-                'AWS_SECRET_ACCESS_KEY': 'AWS_SECRET_ACCESS_KEY'
-            }
+        set_mlflow_access(train_step)
+
+        evaluate = load_component('evaluate_component.yaml', image_digest)
+        evaluate_step = evaluate(
+            prev_run_id=prev_run_id,
+            train_data_dir=preprocess_step.output,
+            run_json=train_step.output
         )
+        set_mlflow_access(evaluate_step)
 
         image = f'{IMAGE_URL}@{image_digest}'
         deploy_isvc = load_component(
@@ -63,7 +77,8 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             image_digest
         )
         deploy_isvc(
-            input_dir=train_step.output,
+            run_json=train_step.output,
+            eval_json=evaluate_step.output,
             image=image
         )
 
@@ -71,11 +86,12 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             'deploy_retrainer_component.yaml',
             image_digest
         )
-        deploy_task = deploy_retrainer(
+        deploy_retrainer(
             image=image,
+            run_json=train_step.output,
+            eval_json=evaluate_step.output,
             pipeline_version=pipeline_version
         )
-        deploy_task.after(train_step)
 
     return pipeline
 

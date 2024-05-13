@@ -1,6 +1,9 @@
 from kubernetes import client, config
+import sys
 import logging
 import argparse
+from pathlib import Path
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -8,7 +11,17 @@ logger = logging.getLogger(__name__)
 config.load_incluster_config()
 
 
-def deploy(image: str, pipeline_version: str):
+def deploy(image: str, pipeline_version: str, run_json: Path, eval_json: Path):
+    eval = load_json(eval_json)
+    run = load_json(run_json)
+    run_id = run['run_id']
+    eval_passed = eval['evaluation_passed']
+
+    if not eval_passed:
+        logger.info('Evaluation not passed, skipping deployment.')
+        sys.exit(0)
+
+    print('EVAL', eval)
     namespace = 'retrainer'
     pod_name = 'retrainer-pod'
     deployment_name = 'retrainer-deployment'
@@ -20,8 +33,11 @@ def deploy(image: str, pipeline_version: str):
             client.V1Container(
                 name=pod_name,
                 command=['python3'],
-                args=['-m', 'inference.retrainer',
-                    '--pipeline_version', pipeline_version],
+                args=[
+                    '-m', 'inference.retrainer',
+                    '--pipeline_version', pipeline_version,
+                    '--run_id', run_id
+                ],
                 image=image,
                 volume_mounts=[client.V1VolumeMount(
                     mount_path='/data',
@@ -76,10 +92,17 @@ def deploy(image: str, pipeline_version: str):
         )
 
 
+def load_json(json_path: Path):
+    with open(json_path, 'r') as f:
+        return json.load(f)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image', type=str)
     parser.add_argument('--pipeline_version', type=str)
+    parser.add_argument('--eval_json', type=Path)
+    parser.add_argument('--run_json', type=Path)
     args = parser.parse_args()
 
-    deploy(args.image, args.pipeline_version)
+    deploy(args.image, args.pipeline_version, args.run_json, args.eval_json)

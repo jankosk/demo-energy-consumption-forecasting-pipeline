@@ -2,9 +2,7 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"
     },
-    "python.formatting.provider": "autopep8",
-    "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true,
-    "python.analysis.typeCheckingMode": "off",
-    "python.linting.flake8Enabled": true
+    "python.analysis.typeCheckingMode": "basic",
+    "flake8.importStrategy": "fromEnvironment",
+    "python.analysis.autoImportCompletions": true,
 }

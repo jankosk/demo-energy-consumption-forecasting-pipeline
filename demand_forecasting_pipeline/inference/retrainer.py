@@ -24,7 +24,7 @@ mape_metric = Gauge('model_mape', 'Mean Absolute Percentage Error (MAPE)')
 retrain_metric = Counter('retrain', 'Number of retrains')
 
 
-def retrainer(pipeline_version: str):
+def retrainer(pipeline_version: str, run_id: str):
     data_predictions = 'predictions.csv'
     data_prod = 'data.csv'
     minio_client = Minio(
@@ -68,7 +68,7 @@ def retrainer(pipeline_version: str):
     preds = predictions_df.yhat.values
 
     if should_retrain(actual, preds, len(prod_df)):
-        run_pipeline(pipeline_version)
+        run_pipeline(pipeline_version, run_id)
         next_date = until_date
         update_timestamp(next_date)
         retrain_metric.inc()
@@ -105,7 +105,7 @@ def check_relative_error(actual, preds) -> bool:
     return MAPE > MAX_MAPE
 
 
-def run_pipeline(version_name: str):
+def run_pipeline(version_name: str, run_id: str):
     client = KfpClient(host=KFP_URL)
     pipeline_id = client.get_pipeline_id(config.PIPELINE_NAME)
     experiment_id = get_experient_id(client)
@@ -126,6 +126,7 @@ def run_pipeline(version_name: str):
         'bucket_name': config.BUCKET_NAME,
         'file_name': config.PROD_DATA,
         'experiment_name': config.EXPERIMENT_NAME,
+        'prev_run_id': run_id
     }
     client.run_pipeline(
         experiment_id=experiment_id,
@@ -155,10 +156,11 @@ def get_timestamp() -> datetime:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pipeline_version', type=str)
+    parser.add_argument('--run_id', type=str)
     args = parser.parse_args()
 
     start_http_server(9090)
 
     while True:
-        retrainer(args.pipeline_version)
+        retrainer(args.pipeline_version, args.run_id)
         time.sleep(5)

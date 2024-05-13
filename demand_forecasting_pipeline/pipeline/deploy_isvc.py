@@ -6,6 +6,7 @@ from kserve import (
     V1beta1InferenceServiceSpec,
     V1beta1PredictorSpec
 )
+import sys
 import json
 import logging
 import argparse
@@ -15,10 +16,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def deploy(input_dir: Path, image: str):
-    run = get_run(input_dir)
+def deploy(run_json: Path, eval_json: Path, image: str):
+    run = get_run(run_json)
+    eval = get_eval(eval_json)
+    eval_passed = eval['evaluation_passed']
     model_uri = f'{run["model_uri"]}/model.np'
     run_id = run['run_id']
+
+    if not eval_passed:
+        logger.info('Evaluation not passed, skipping deployment.')
+        sys.exit(0)
 
     isvc_namespace = 'kserve-inference'
     isvc_name = 'demand-forecasting-isvc'
@@ -57,16 +64,21 @@ def deploy(input_dir: Path, image: str):
         kserve_client.create(inferenceservice=isvc)
 
 
-def get_run(input_dir: Path):
-    metrics_path = input_dir / 'mlflow.json'
-    with metrics_path.open('r') as f:
+def get_run(run_path: Path):
+    with run_path.open('r') as f:
+        return json.load(f)
+
+
+def get_eval(eval_path: Path):
+    with eval_path.open('r') as f:
         return json.load(f)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir', type=Path)
+    parser.add_argument('--run_json', type=Path)
+    parser.add_argument('--eval_json', type=Path)
     parser.add_argument('--image', type=str)
     args = parser.parse_args()
 
-    deploy(input_dir=args.input_dir, image=args.image)
+    deploy(run_json=args.run_json, eval_json=args.eval_json, image=args.image)
