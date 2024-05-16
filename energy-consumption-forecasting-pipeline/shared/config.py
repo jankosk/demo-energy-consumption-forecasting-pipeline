@@ -1,6 +1,6 @@
 import os
 
-MODEL_NAME = 'demand-forecasting-model'
+MODEL_NAME = 'energy-consumption-forecasting-model'
 MLFLOW_PROD_STAGE = 'Production'
 BUCKET_NAME = 'mlflow'
 PROD_DATA = 'data.csv'

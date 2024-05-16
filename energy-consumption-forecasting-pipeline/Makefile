@@ -19,7 +19,7 @@ FROM_DATE = 2019-04-29T15:00:00
 run-inference:
 	./scripts/forecast.sh $(FROM_DATE)
 
-ISVC_POD = demand-forecasting-isvc
+ISVC_POD = energy-consumption-forecasting-isvc
 isvc-logs:
 	kubectl -n kserve-inference logs -l app=${ISVC_POD} -c kserve-container -f
 

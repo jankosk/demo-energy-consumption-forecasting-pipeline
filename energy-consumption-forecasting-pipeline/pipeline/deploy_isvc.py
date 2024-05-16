@@ -28,7 +28,7 @@ def deploy(run_json: Path, eval_json: Path, image: str):
         sys.exit(0)
 
     isvc_namespace = 'kserve-inference'
-    isvc_name = 'demand-forecasting-isvc'
+    isvc_name = 'energy-consumption-forecasting-isvc'
 
     isvc = V1beta1InferenceService(
         api_version=constants.KSERVE_V1BETA1,

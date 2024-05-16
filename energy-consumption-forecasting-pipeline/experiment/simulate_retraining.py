@@ -12,7 +12,7 @@ import requests
 import logging
 import time
 
-SERVICE_NAME = 'demand-forecasting-isvc.kserve-inference.example.com'
+SERVICE_NAME = 'energy-consumption-forecasting-isvc.kserve-inference.example.com'
 ALL_DATA_SET = 'data.csv'
 FIRST_DATE = datetime.fromisoformat('2019-04-29T15:00:00')
 LAST_DATE = datetime.fromisoformat('2022-04-01T00:00:00')
