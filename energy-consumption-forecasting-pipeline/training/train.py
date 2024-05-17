@@ -7,7 +7,6 @@ from neuralprophet import NeuralProphet, utils as np_utils
 import mlflow
 import pandas as pd
 from sklearn import metrics
-import matplotlib.pyplot as plt
 from inference.inference_service import process_forecast
 from shared import config
 from torchmetrics.regression import mae, mape
@@ -38,6 +37,7 @@ def train(experiment_name: str, train_data_dir: Path, output_path: Path):
         )
         model.add_country_holidays(country_name='Finland')
         model.add_future_regressor('Temp_outside')
+        model.set_plotting_backend('plotly')
 
         training_metrics = model.fit(
             df=df_train,
@@ -50,20 +50,24 @@ def train(experiment_name: str, train_data_dir: Path, output_path: Path):
             raise Exception('Failed to fit model')
         log_training_metrics(training_metrics)
 
-        df_test_lags = pd.concat([df_valid.tail(config.N_LAGS), df_test])
-        forecasts = forecast(df_test=df_test_lags, model=model)
+        forecast = make_forecast(
+            df_lags=pd.concat([df_train, df_valid]),
+            future_df=df_test,
+            model=model
+        )
+        processed_forecast = process_forecast(forecast)
         test_metrics = evaluate_forecast(
             actual=df_test.y.values,
-            preds=forecasts.yhat.values)
+            preds=processed_forecast.yhat.values)
         mlflow.log_metrics(test_metrics)
 
-        fig, ax = plt.subplots(figsize=(15, 8))
-        ax.plot(df_test.ds, df_test.y, 'r', label='Actual')
-        ax.plot(forecasts.ds, forecasts.yhat, 'b', label='Forecast')
-        ax.legend()
+        forecast_fig = model.plot(forecast)
+        mlflow.log_figure(forecast_fig, 'forecast.html')
+
+        components_fig = model.plot_components(forecast)
+        mlflow.log_figure(components_fig, 'components.html')
 
         log_model(model)
-        mlflow.log_figure(fig, 'forecast.png')
         model_uri = f'{mlflow.get_artifact_uri()}/model/model.np'
         model_version = mlflow.register_model(model_uri, config.MODEL_NAME)
         save_run(
@@ -81,21 +85,14 @@ def load_data(csv_path: Path):
     return df
 
 
-def forecast(df_test: pd.DataFrame, model: NeuralProphet):
-    n_tests = int(config.N_LAGS / config.N_FORECASTS)
-    forecasts = pd.DataFrame()
-    for n in range(n_tests):
-        from_idx = n * config.N_FORECASTS
-        until_idx = from_idx + config.N_LAGS
-        future_df = df_test.iloc[until_idx:until_idx + config.N_FORECASTS]
-        future_temp_df = future_df[['ds', 'Temp_outside']]
-        forecast_df = model.make_future_dataframe(
-            df=df_test.iloc[from_idx:until_idx],
-            regressors_df=future_temp_df)
-        forecast = model.predict(forecast_df)
-        forecast = process_forecast(forecast)
-        forecasts = pd.concat([forecasts, forecast])
-    return forecasts
+def make_forecast(df_lags: pd.DataFrame, future_df: pd.DataFrame, model: NeuralProphet):
+    future_temp_df = future_df[['ds', 'Temp_outside']]
+    forecast_df = model.make_future_dataframe(
+        df=df_lags,
+        regressors_df=future_temp_df,
+        n_historic_predictions=True
+    )
+    return model.predict(forecast_df)
 
 
 def evaluate_forecast(preds, actual) -> Dict[str, float]:
