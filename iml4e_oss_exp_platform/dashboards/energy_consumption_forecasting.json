@@ -213,7 +213,35 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -241,18 +269,15 @@
       },
       "id": 6,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "8.4.3",
       "targets": [
@@ -270,9 +295,10 @@
         }
       ],
       "title": "Retrains",
-      "type": "stat"
+      "type": "timeseries"
     }
   ],
+  "refresh": "",
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
@@ -285,8 +311,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Energy Demand Forecasting",
+  "title": "Energy Consumption Forecasting",
   "uid": "upGpHWfIz",
-  "version": 7,
+  "version": 9,
   "weekStart": ""
 }
