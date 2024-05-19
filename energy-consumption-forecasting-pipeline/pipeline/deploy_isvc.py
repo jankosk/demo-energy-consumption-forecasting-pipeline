@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def deploy(run_json: Path, image: str):
     run = get_run(run_json)
-    model_uri = f'{run["model_uri"]}/model.np'
+    model_uri = f'{run["model_uri"]}'
     run_id = run['run_id']
 
     isvc_namespace = 'kserve-inference'

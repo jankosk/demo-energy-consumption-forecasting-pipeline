@@ -74,7 +74,6 @@ def train(experiment_name: str, train_data_dir: Path, output_path: Path):
             run_id=run.info.run_id,
             model_uri=model_uri,
             model_version=model_version.version,
-            metrics=test_metrics,
             output_path=output_path
         )
 
@@ -114,18 +113,11 @@ def log_model(model: NeuralProphet):
     mlflow.log_artifact(str(model_path), artifact_path='model')
 
 
-def save_run(
-    run_id: str,
-    model_uri: str,
-    model_version: str,
-    metrics: Dict[str, float],
-    output_path: Path
-):
+def save_run(run_id: str, model_uri: str, model_version: str, output_path: Path):
     contents = {
         'run_id': run_id,
         'model_version': model_version,
         'model_uri': model_uri,
-        'metrics': metrics
     }
     output_path.write_text(json.dumps(contents))
 
