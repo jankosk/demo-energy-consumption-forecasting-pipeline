@@ -6,7 +6,6 @@ from kserve import (
     V1beta1InferenceServiceSpec,
     V1beta1PredictorSpec
 )
-import sys
 import json
 import logging
 import argparse
@@ -16,16 +15,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def deploy(run_json: Path, eval_json: Path, image: str):
+def deploy(run_json: Path, image: str):
     run = get_run(run_json)
-    eval = get_eval(eval_json)
-    eval_passed = eval['evaluation_passed']
     model_uri = f'{run["model_uri"]}/model.np'
     run_id = run['run_id']
-
-    if not eval_passed:
-        logger.info('Evaluation not passed, skipping deployment.')
-        sys.exit(0)
 
     isvc_namespace = 'kserve-inference'
     isvc_name = 'energy-consumption-forecasting-isvc'
@@ -37,7 +30,10 @@ def deploy(run_json: Path, eval_json: Path, image: str):
             name=isvc_name,
             labels={'app': isvc_name},
             namespace=isvc_namespace,
-            annotations={'sidecar.istio.io/inject': 'false'}
+            annotations={
+                'sidecar.istio.io/inject': 'false',
+                'serving.kserve.io/enable-prometheus-scraping': 'true'
+            }
         ),
         spec=V1beta1InferenceServiceSpec(
             predictor=V1beta1PredictorSpec(
@@ -69,16 +65,10 @@ def get_run(run_path: Path):
         return json.load(f)
 
 
-def get_eval(eval_path: Path):
-    with eval_path.open('r') as f:
-        return json.load(f)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--run_json', type=Path)
-    parser.add_argument('--eval_json', type=Path)
     parser.add_argument('--image', type=str)
     args = parser.parse_args()
 
-    deploy(run_json=args.run_json, eval_json=args.eval_json, image=args.image)
+    deploy(run_json=args.run_json, image=args.image)

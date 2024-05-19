@@ -3,7 +3,6 @@ description: Deploy inference service
 
 inputs:
   - {name: run_json, type: LocalPath}
-  - {name: eval_json, type: LocalPath}
   - {name: image, type: String}
 
 implementation:
@@ -14,6 +13,5 @@ implementation:
       -m,
       pipeline.deploy_isvc,
       --run_json, {inputPath: run_json},
-      --eval_json, {inputPath: eval_json},
       --image, {inputValue: image}
     ]

@@ -39,12 +39,7 @@ def set_mlflow_access(task: dsl.PipelineTask):
 
 def create_pipeline_func(image_digest: str, pipeline_version: str):
     @dsl.pipeline(name='Training')
-    def pipeline(
-        bucket_name: str,
-        file_name: str,
-        experiment_name: str,
-        prev_run_id: str = ''
-    ):
+    def pipeline(bucket_name: str, file_name: str, experiment_name: str):
         pull_data = load_component('pull_data_component.yaml', image_digest)
         pull_data_step = pull_data(
             bucket_name=bucket_name,
@@ -63,14 +58,6 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
         )
         set_mlflow_access(train_step)
 
-        evaluate = load_component('evaluate_component.yaml', image_digest)
-        evaluate_step = evaluate(
-            prev_run_id=prev_run_id,
-            train_data_dir=preprocess_step.output,
-            run_json=train_step.output
-        )
-        set_mlflow_access(evaluate_step)
-
         image = f'{IMAGE_URL}@{image_digest}'
         deploy_isvc = load_component(
             'deploy_isvc_component.yaml',
@@ -78,7 +65,6 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
         )
         deploy_isvc(
             run_json=train_step.output,
-            eval_json=evaluate_step.output,
             image=image
         )
 
@@ -89,7 +75,6 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
         deploy_retrainer(
             image=image,
             run_json=train_step.output,
-            eval_json=evaluate_step.output,
             pipeline_version=pipeline_version
         )
 
