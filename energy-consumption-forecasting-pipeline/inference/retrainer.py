@@ -161,4 +161,4 @@ if __name__ == '__main__':
 
     while True:
         retrainer(args.pipeline_version)
-        time.sleep(5)
+        time.sleep(config.RETRAINER_INTERVAL_SEC)
