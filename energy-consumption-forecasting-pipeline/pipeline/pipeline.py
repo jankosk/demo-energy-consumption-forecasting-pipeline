@@ -72,11 +72,11 @@ def create_pipeline_func(image_digest: str, pipeline_version: str):
             'deploy_retrainer_component.yaml',
             image_digest
         )
-        deploy_retrainer(
+        deploy_retrainer_step = deploy_retrainer(
             image=image,
-            run_json=train_step.output,
             pipeline_version=pipeline_version
         )
+        deploy_retrainer_step.after(train_step)
 
     return pipeline
 
