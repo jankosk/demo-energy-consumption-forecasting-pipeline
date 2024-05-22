@@ -106,7 +106,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "model_mae",
+          "expr": "sum(model_mae)",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -172,7 +172,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 12,
         "y": 0
@@ -196,7 +196,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "model_mape",
+          "expr": "sum(model_mape)",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -287,7 +287,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "retrain_total",
+          "expr": "sum(retrain_total)",
           "format": "time_series",
           "interval": "",
           "legendFormat": "",
@@ -313,6 +313,6 @@
   "timezone": "",
   "title": "Energy Consumption Forecasting",
   "uid": "upGpHWfIz",
-  "version": 9,
+  "version": 11,
   "weekStart": ""
 }
