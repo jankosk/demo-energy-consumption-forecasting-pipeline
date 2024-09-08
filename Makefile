@@ -31,9 +31,11 @@ RETRAINER_DEPLOYMENT = retrainer-deployment
 kill-retrainer:
 	kubectl -n retrainer delete deployment ${RETRAINER_DEPLOYMENT}
 
+set-initial-data:
+	python -m experiment.set_initial_data
+
 run-experiment:
 	python -m experiment.simulate_retraining
 
-clear-experiment:
-	python -m experiment.set_initial_data
+clear-experiment: set_initial_data
 	./scripts/clear_volume.sh

@@ -1,8 +1,6 @@
 from kubernetes import client, config
 import logging
 import argparse
-from pathlib import Path
-import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -10,10 +8,7 @@ logger = logging.getLogger(__name__)
 config.load_incluster_config()
 
 
-def deploy(image: str, pipeline_version: str, run_json: Path):
-    run = load_json(run_json)
-    run_id = run['run_id']
-
+def deploy(image: str, pipeline_version: str):
     namespace = 'retrainer'
     pod_name = 'retrainer-pod'
     deployment_name = 'retrainer-deployment'
@@ -27,8 +22,7 @@ def deploy(image: str, pipeline_version: str, run_json: Path):
                 command=['python3'],
                 args=[
                     '-m', 'inference.retrainer',
-                    '--pipeline_version', pipeline_version,
-                    '--run_id', run_id
+                    '--pipeline_version', pipeline_version
                 ],
                 image=image,
                 volume_mounts=[client.V1VolumeMount(
@@ -84,16 +78,10 @@ def deploy(image: str, pipeline_version: str, run_json: Path):
         )
 
 
-def load_json(json_path: Path):
-    with open(json_path, 'r') as f:
-        return json.load(f)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image', type=str)
     parser.add_argument('--pipeline_version', type=str)
-    parser.add_argument('--run_json', type=Path)
     args = parser.parse_args()
 
-    deploy(args.image, args.pipeline_version, args.run_json)
+    deploy(args.image, args.pipeline_version)
